@@ -97,7 +97,7 @@
 
   <div class="odd" id="normal_poll" hidden>
     <p>{{.Translation.NormalPoll}}:</p>
-    <form id="new_normal" action="/{{.Key}}" method="POST">
+    <form id="new_normal" method="POST">
       <input type="hidden" name="type" value="normal">
       <textarea id="textarea_normal" name="description" rows="5" form="new_normal" placeholder="{{.Translation.Description}}" maxlength="100000"></textarea> <br> <hr>
       <div id="normal_answers">
@@ -140,7 +140,7 @@
 
   <div class="odd" id="date_poll" hidden>
     <p>{{.Translation.AppointmentPoll}}</p>
-    <form id="new_date" action="/{{.Key}}" method="POST">
+    <form id="new_date" method="POST">
       <input type="hidden" name="type" value="date">
       <textarea id="textarea_date" name="description" rows="5" form="new_date" placeholder="{{.Translation.Description}}" maxlength="100000"></textarea> <br> <hr>
       <label for="start">{{.Translation.StartDate}}:</label> <input type="date" id="start" name="start" required> <br>
