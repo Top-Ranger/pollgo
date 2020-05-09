@@ -172,6 +172,8 @@ func (fm *fileMemory) GetPollResult(pollID string) ([][]int, []string, error) {
 	}
 
 	p := fm.memory[pollID]
+	p.LastAccess = time.Now()
+	fm.memory[pollID] = p
 	return p.Data, p.Names, nil
 }
 
@@ -193,6 +195,7 @@ func (fm *fileMemory) SavePollConfig(pollID string, config []byte) error {
 
 	p := fm.memory[pollID]
 	p.Config = config
+	p.LastAccess = time.Now()
 	fm.memory[pollID] = p
 	return nil
 }
@@ -215,6 +218,8 @@ func (fm *fileMemory) GetPollConfig(pollID string) ([]byte, error) {
 	}
 
 	p := fm.memory[pollID]
+	p.LastAccess = time.Now()
+	fm.memory[pollID] = p
 	return p.Config, nil
 }
 
