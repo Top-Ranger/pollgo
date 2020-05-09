@@ -1,0 +1,5 @@
+{
+	"ClearInterval": 60,
+	"MaximumMemory": 100,
+	"Path":          "./data"
+}

@@ -1,0 +1,81 @@
+<!---Goto Anser-->
+<!DOCTYPE HTML>
+<html lang="{{.Translation.Language}}">
+
+<head>
+  <title>PollGo!</title>
+  <meta charset="UTF-8">
+  <meta name="robots" content="noindex, nofollow"/>
+  <meta name="author" content="Marcus Soll"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="author" href="https://msoll.eu/">
+  <link rel="stylesheet" href="/css/pollgo.css">
+  <link rel="icon" type="image/vnd.microsoft.icon" href="/static/favicon.ico">
+</head>
+
+<body>
+  <header>
+    <div style="margin-left: 1%">
+      PollGo!
+    </div>
+  </header>
+
+  <h1>{{.Key}}</h1>
+
+  {{if .Description}}
+  <div class="even">
+    {{.Description}}
+  </div>
+  {{end}}
+
+  <div class="odd">
+    <p>{{.Translation.Results}}:</p>
+    <div style="width: 100%; overflow-x: auto;">
+      <table style="overflow-x: auto;">
+      <thead>
+      <tr>
+      <th></th>
+      {{range $i, $e := .Questions}}
+      <th>{{index $e}}</th>
+      {{end}}
+      </tr>
+      </thead>
+      <tbody>
+      {{range $i, $e := .Answers }}
+      <tr>
+      <td style="white-space:nowrap;">{{index $.Names $i}}</td>
+      {{range $I, $E := $.Questions }}
+      <td class="centre" title="{{index $.Names $i}} - {{index $e $I 0}}" bgcolor="{{index $e $I 1}}">{{index $e $I 0}}</td>
+      {{end}}
+      </tr>
+      {{end}}
+      <tr>
+      <td class="th-cell"></td>
+      {{range $i, $e := .Questions}}
+      <td class="centre th-cell" style="font-size: small;">{{index $e}}</td>
+      {{end}}
+      </tr>
+      <tr>
+      <td class="th-cell" style="white-space:nowrap;"><strong>{{.Translation.Points}}</strong></td>
+      {{range $i, $e := .Points }}
+      <td class="centre{{if eq $i $.BestNumber}} th-cell{{end}}" title='{{index $.Questions $i}} - {{printf "%.2f" $e}}'>{{printf "%.2f" $e}}</td>
+      {{end}}
+      </tr>
+      </tbody>
+      </table>
+      </div>
+
+      <form target="/{{.Key}}" method="GET">
+        <input type="hidden" name="answer" value="yes">
+        <p><input style="font-size: x-large; white-space: normal;" type="submit" value="{{.Translation.Participate}}"></p>
+      </form>
+  </div>
+
+  <footer>
+    <div>
+      {{.Translation.CreatedBy}} <a href="https://msoll.eu/"><u>Marcus Soll</u></a> - <a href="/impressum.html"><u>{{.Translation.Impressum}}</u></a> - <a href="/dsgvo.html"><u>{{.Translation.PrivacyPolicy}}</u></a>
+    </div>
+  </footer>
+</body>
+
+</html>

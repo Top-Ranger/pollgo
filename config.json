@@ -1,0 +1,10 @@
+ {
+    "Language": "en",
+    "MaxNumberQuestions": 100,
+    "Address": "localhost:34625",
+    "PathImpressum": "impressum.md",
+    "PathDSGVO": "DSGVO.md",
+    "Passwords": ["test"],
+    "DataSafe": "FileMemory",
+    "DataSafeConfig": "FileMemory.json"
+ }

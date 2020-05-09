@@ -1,0 +1,74 @@
+<!--- Form -->
+<!DOCTYPE HTML>
+<html lang="{{.Translation.Language}}">
+
+<head>
+  <title>PollGo!</title>
+  <meta charset="UTF-8">
+  <meta name="robots" content="noindex, nofollow"/>
+  <meta name="author" content="Marcus Soll"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="author" href="https://msoll.eu/">
+  <link rel="stylesheet" href="/css/pollgo.css">
+  <link rel="icon" type="image/vnd.microsoft.icon" href="/static/favicon.ico">
+</head>
+
+<body>
+  <header>
+    <div style="margin-left: 1%">
+      PollGo!
+    </div>
+  </header>
+
+  <h1>{{.Key}}</h1>
+
+  {{if .Description}}
+  <div class="even">
+    {{.Description}}
+  </div>
+  {{end}}
+
+  <div class="odd">
+    <form target="/{{.Key}}" method="POST">
+      <p><label for="name">{{.Translation.Name}} <em>({{.Translation.Optional}})</em>:</label> <input type="text" id="name" name="name" placeholder="{{.Translation.Name}}" maxlength="150"></p>
+
+      <div style="width: 100%; overflow-x: auto;">
+        <table style="overflow-x: auto;">
+        <thead>
+        <tr>
+        <th></th>
+        {{range $i, $e := .AnswerOption}}
+        <th><abbr title="{{index $e 1}} {{$.Translation.Points}}">{{index $e 0}}</abbr></th>
+        {{end}}
+        </tr>
+        </thead>
+        <tr>
+        <td></td>
+        {{range $i, $e := .AnswerOption}}
+        <td class="centre" bgcolor="{{index $e 2}}"><button form="detach from form" onclick="e=document.getElementById('_tbody');l=e.getElementsByTagName('input');for(var i=0;i<l.length;i++){if(l[i].type==='radio'&&l[i].value==='{{$i}}'){l[i].checked=true}}">all {{index $e 0}}</button></td>
+        {{end}}
+        </tr>
+        <tbody id="_tbody">
+        {{range $I, $E := .Questions }}
+        <tr>
+        <td>{{$E}}</td>
+        {{range $i, $e := $.AnswerOption}}
+        <td class="centre" bgcolor="{{index $e 2}}" title="{{$E}} - {{index $e 0}}" onclick="e=document.getElementById('{{$I}}_{{$i}}');e.checked=true;"><input title="{{$E}} - {{index $e 0}}" type="radio" id="{{$I}}_{{$i}}" name="{{$I}}" value="{{$i}}" required></td>
+        {{end}}
+        </tr>
+        {{end}}
+        </tbody>
+        </table>
+      </div>
+      <p><input type="submit" value="{{.Translation.Submit}}"></p>
+    </form>
+  </div>
+
+  <footer>
+    <div>
+      {{.Translation.CreatedBy}} <a href="https://msoll.eu/"><u>Marcus Soll</u></a> - <a href="/impressum.html" target="_blank"><u>{{.Translation.Impressum}}</u></a> - <a href="/dsgvo.html" target="_blank"><u>{{.Translation.PrivacyPolicy}}</u></a>
+    </div>
+  </footer>
+</body>
+
+</html>
