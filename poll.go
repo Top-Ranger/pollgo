@@ -138,6 +138,14 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				return
 			}
 
+			// Test DSGVO first
+			if r.Form.Get("dsgvo") == "" {
+				rw.WriteHeader(http.StatusForbidden)
+				t := textTemplateStruct{"403 Forbidden", GetDefaultTranslation()}
+				textTemplate.Execute(rw, t)
+				return
+			}
+
 			results := make([]int, len(p.Questions))
 			for i := range p.Questions {
 				a := r.Form.Get(strconv.Itoa(i))
