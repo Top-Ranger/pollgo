@@ -38,7 +38,7 @@
         <tr>
         <th></th>
         {{range $i, $e := .AnswerOption}}
-        <th><abbr title="{{index $e 1}} {{$.Translation.Points}}">{{index $e 0}}</abbr></th>
+        <th class="centre"><abbr title="{{index $e 1}} {{$.Translation.Points}}">{{index $e 0}}</abbr></th>
         {{end}}
         </tr>
         </thead>
