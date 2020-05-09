@@ -77,6 +77,7 @@
       n.setAttribute("id", "normalanswervalue"+normalansweroption);
       n.setAttribute("name", "normalanswervalue"+normalansweroption);
       n.setAttribute("placeholder", "{{.Translation.Value}}")
+      n.setAttribute("step", "0.01")
 
       var c = document.createElement("INPUT");
       c.setAttribute("type", "color");
@@ -104,8 +105,8 @@
       </div>
       <p><button form="no_form" onclick="addOption();">{{.Translation.AddOption}}</button></p> <hr>
       <div id="normal_answer_options">
-        <label for="normalansweroption1">{{.Translation.AnswerOption}}: </label><input type="text" id="normalansweroption1" name="normalansweroption1" maxlength="500" placeholder="{{.Translation.AnswerOption}}" value="{{.Translation.Yes}}"><input type="number" id="normalanswervalue1" name="normalanswervalue1" placeholder="{{.Translation.Value}}" value="1"><input type="color" id="normalanswercolour1" name="normalanswercolour1" placeholder="{{.Translation.Colour}}" value="#1FBC1F"> <br>
-        <label for="normalansweroption2">{{.Translation.AnswerOption}}: </label><input type="text" id="normalansweroption2" name="normalansweroption2" maxlength="500" placeholder="{{.Translation.AnswerOption}}" value="{{.Translation.No}}"><input type="number" id="normalanswervalue2" name="normalanswervalue2" placeholder="{{.Translation.Value}}" value="0"><input type="color" id="normalanswercolour2" name="normalanswercolour2" placeholder="{{.Translation.Colour}}" value="#D42356"> <br>
+        <label for="normalansweroption1">{{.Translation.AnswerOption}}: </label><input type="text" id="normalansweroption1" name="normalansweroption1" maxlength="500" placeholder="{{.Translation.AnswerOption}}" value="{{.Translation.Yes}}"><input type="number" id="normalanswervalue1" name="normalanswervalue1" placeholder="{{.Translation.Value}}" step="0.01" value="1.00"><input type="color" id="normalanswercolour1" name="normalanswercolour1" placeholder="{{.Translation.Colour}}" value="#1FBC1F"> <br>
+        <label for="normalansweroption2">{{.Translation.AnswerOption}}: </label><input type="text" id="normalansweroption2" name="normalansweroption2" maxlength="500" placeholder="{{.Translation.AnswerOption}}" value="{{.Translation.No}}"><input type="number" id="normalanswervalue2" name="normalanswervalue2" placeholder="{{.Translation.Value}}" step="0.01" value="0.00"><input type="color" id="normalanswercolour2" name="normalanswercolour2" placeholder="{{.Translation.Colour}}" value="#D42356"> <br>
       </div>
       <p><button form="no_form" onclick="addAnswer();">{{.Translation.AddOption}}</button></p> <hr>
       {{if .HasPassword}}<p><label for="normal_pw">{{.Translation.Password}}: </label><input type="password" id="normal_pw" name="pw" maxlength="500" required></p> <hr>{{end}}
