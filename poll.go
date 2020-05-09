@@ -37,7 +37,7 @@ type Poll struct {
 	AnswerOption [][]string // [text, value, colour]
 	Questions    []string
 	Description  string
-	Initialised  bool
+	initialised  bool
 }
 
 type pollTemplateStruct struct {
@@ -106,15 +106,17 @@ func sanitiseKey(key string) string {
 }
 
 // LoadPoll loads  and initialises the poll from the current provided configuration.
+// PLEASE NOTE: The loaded poll is not verified. If you use an untrusted source, you need to verify the poll else the behaviour is undefined.
 func LoadPoll(config []byte) (Poll, error) {
 	if len(config) == 0 {
-		return Poll{Initialised: false}, nil
+		return Poll{initialised: false}, nil
 	}
 	var p Poll
 	err := json.Unmarshal(config, &p)
 	if err != nil {
-		return Poll{Initialised: false}, err
+		return Poll{initialised: false}, err
 	}
+	p.initialised = true
 	return p, nil
 }
 
@@ -128,7 +130,7 @@ func (p Poll) ExportPoll() ([]byte, error) {
 func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string) {
 	switch r.Method {
 	case http.MethodPost:
-		if p.Initialised {
+		if p.initialised {
 			// This is an existing poll
 			err := r.ParseForm()
 			if err != nil {
@@ -175,7 +177,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			return
 		}
 		// This is a new poll
-		if p.Initialised {
+		if p.initialised {
 			rw.WriteHeader(http.StatusBadRequest)
 			t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation()}
 			textTemplate.Execute(rw, t)
@@ -276,7 +278,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				textTemplate.Execute(rw, t)
 				return
 			}
-			p.Initialised = true
+			p.initialised = true
 		case "date":
 			t := GetDefaultTranslation()
 			p.AnswerOption = [][]string{{t.DateYes, "1.0", "#5EFF5E"}, {t.DateOnlyIfNeeded, "0.25", "#FFE75E"}, {t.DateNo, "-1.0", "#FF5E66"}, {t.DateCanNotSay, "0.0", "#DBD9E2"}}
@@ -408,7 +410,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				textTemplate.Execute(rw, t)
 				return
 			}
-			p.Initialised = true
+			p.initialised = true
 		default:
 			rw.WriteHeader(http.StatusBadRequest)
 			t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation()}
@@ -432,7 +434,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 		http.Redirect(rw, r, fmt.Sprintf("/%s", key), http.StatusSeeOther)
 		return
 	case http.MethodGet:
-		if p.Initialised {
+		if p.initialised {
 			// This is an existing poll
 			err := r.ParseForm()
 			if err != nil {
