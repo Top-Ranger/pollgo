@@ -121,6 +121,7 @@ func LoadPoll(config []byte) (Poll, error) {
 }
 
 // ExportPoll returns the configuration of the poll at the time of calling.
+// The configuration is human readable.
 func (p Poll) ExportPoll() ([]byte, error) {
 	b, err := json.Marshal(&p)
 	return b, err
