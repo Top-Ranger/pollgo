@@ -74,6 +74,7 @@ type Translation struct {
 	PollNoOptions       string
 	DeletePoll          string
 	PollIsDeleted       string
+	Starred             string
 }
 
 const defaultLanguage = "en"

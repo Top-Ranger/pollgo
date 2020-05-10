@@ -20,7 +20,58 @@
     </div>
   </header>
 
-  <h1>{{.Key}}</h1>
+  <h1>{{.Key}} <span id="pollgo_star"></span></h1>
+
+  <script>
+    function createStar() {
+      var s = document.createElement("SPAN");
+      s.textContent = "★";
+      s.onclick = function() {
+        var a = JSON.parse(localStorage.getItem("pollgo_star"));
+        var i = a.indexOf("{{.Key}}")
+        a.splice(i, 1)
+        localStorage.setItem("pollgo_star", JSON.stringify(a));
+        var target = document.getElementById("pollgo_star");
+        target.textContent = "";
+        target.appendChild(createNoStar());
+      };
+      return s;
+    }
+
+    function createNoStar() {
+      var s = document.createElement("SPAN");
+      s.textContent = "☆";
+      s.onclick = function() {
+        var a = JSON.parse(localStorage.getItem("pollgo_star"));
+        if(a === null) {
+          a = [];
+        }
+        a.push("{{.Key}}");
+        localStorage.setItem("pollgo_star", JSON.stringify(a));
+        var target = document.getElementById("pollgo_star");
+        target.textContent = "";
+        target.appendChild(createStar());
+      };
+      return s;
+    }
+
+    var found = false;
+    try {
+      var a = JSON.parse(localStorage.getItem("pollgo_star"));
+      found = a.indexOf("{{.Key}}") != -1;
+    } catch (e) {
+      found = false;
+    }
+    var s;
+    if (found) {
+      s = createStar();
+    } else {
+      s = createNoStar();
+    }
+    var target = document.getElementById("pollgo_star");
+    target.textContent = "";
+    target.appendChild(s);
+  </script>
 
   {{if .Description}}
   <div class="even">

@@ -58,6 +58,33 @@ func init() {
 	}
 }
 
+const startpage = `
+<h1>PollGo!</h1>
+
+<div class="even">
+<h2>%s:</h2>
+<ul id="starlist">
+</ul>
+</div>
+
+<script>
+try {
+  var a = JSON.parse(localStorage.getItem("pollgo_star"));
+  a.sort();
+  var t = document.getElementById("starlist");
+  for(var i = 0; i < a.length; i++) {
+	var link = document.createElement("A");
+	link.href = "/" + a[i];
+	link.textContent = a[i];
+	var li = document.createElement("LI");
+	li.appendChild(link);
+	t.appendChild(li);
+  }
+} catch (e) {
+}
+</script>
+`
+
 type textTemplateStruct struct {
 	Text        template.HTML
 	Translation Translation
@@ -177,7 +204,9 @@ func initialiseServer() error {
 
 func rootHandle(rw http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/" {
-		t := textTemplateStruct{"<h1>PollGo!!</h1>", GetDefaultTranslation()}
+		tl := GetDefaultTranslation()
+		text := fmt.Sprintf(startpage, template.HTMLEscapeString(tl.Starred))
+		t := textTemplateStruct{template.HTML(text), tl}
 		textTemplate.Execute(rw, t)
 		return
 	}
