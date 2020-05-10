@@ -126,6 +126,7 @@ progress {
 
 .starlist {
     list-style: none;
+    padding-left: 1ch;
 }
 
 .starlist li::before {
