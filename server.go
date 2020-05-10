@@ -63,7 +63,7 @@ const startpage = `
 
 <div class="even">
 <h2>%s:</h2>
-<ul id="starlist">
+<ul class="starlist" id="starlist">
 </ul>
 </div>
 

@@ -123,3 +123,12 @@ pre {
 progress {
     width: 100%;
 }
+
+.starlist {
+    list-style: none;
+}
+
+.starlist li::before {
+    padding-right: 1ch;
+    content: "★";
+}
