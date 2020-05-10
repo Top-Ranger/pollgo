@@ -41,5 +41,7 @@
     "SelectPollKind": "Select kind of poll",
     "Results": "Results",
     "PollToLargeError": "Poll has too many options, please reduce them.",
-    "PollNoOptions": "Poll is empty. Please recheck the configuration."
+    "PollNoOptions": "Poll is empty. Please recheck the configuration.",
+    "DeletePoll": "Delete poll",
+    "PollIsDeleted": "Poll is deleted and can not be accessed any longer."
 }

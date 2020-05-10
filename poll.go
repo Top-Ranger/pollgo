@@ -37,6 +37,7 @@ type Poll struct {
 	AnswerOption [][]string // [text, value, colour]
 	Questions    []string
 	Description  string
+	Deleted      bool
 	initialised  bool
 }
 
@@ -48,6 +49,7 @@ type pollTemplateStruct struct {
 	Points      []float64
 	BestNumber  int
 	Description template.HTML
+	HasPassword bool
 	Translation Translation
 }
 
@@ -138,6 +140,46 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				rw.WriteHeader(http.StatusInternalServerError)
 				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation()}
 				textTemplate.Execute(rw, t)
+				return
+			}
+
+			if r.Form.Get("delete") == "true" {
+				// Delete this poll and return
+
+				// Test password first
+				if len(config.Passwords) != 0 {
+					pw := encodePassword(r.Form.Get("pw"))
+					correct := false
+					for i := range config.Passwords {
+						if pw == config.Passwords[i] {
+							correct = true
+							break
+						}
+					}
+					if !correct {
+						rw.WriteHeader(http.StatusForbidden)
+						t := textTemplateStruct{"403 Forbidden", GetDefaultTranslation()}
+						textTemplate.Execute(rw, t)
+						return
+					}
+				}
+
+				p.Deleted = true
+				b, err := p.ExportPoll()
+				if err != nil {
+					rw.WriteHeader(http.StatusInternalServerError)
+					t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation()}
+					textTemplate.Execute(rw, t)
+					return
+				}
+				err = safe.SavePollConfig(key, b)
+				if err != nil {
+					rw.WriteHeader(http.StatusInternalServerError)
+					t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation()}
+					textTemplate.Execute(rw, t)
+					return
+				}
+				http.Redirect(rw, r, fmt.Sprintf("/%s", key), http.StatusSeeOther)
 				return
 			}
 
@@ -435,6 +477,15 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 		http.Redirect(rw, r, fmt.Sprintf("/%s", key), http.StatusSeeOther)
 		return
 	case http.MethodGet:
+		// Test if this is deleted
+		if p.Deleted {
+			rw.WriteHeader(http.StatusGone)
+			tl := GetDefaultTranslation()
+			t := textTemplateStruct{template.HTML(template.HTMLEscapeString(tl.PollIsDeleted)), tl}
+			textTemplate.Execute(rw, t)
+			return
+		}
+
 		if p.initialised {
 			// This is an existing poll
 			err := r.ParseForm()
@@ -497,6 +548,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				Points:      make([]float64, len(p.Questions)),
 				BestNumber:  0,
 				Description: Format([]byte(p.Description)),
+				HasPassword: len(config.Passwords) != 0,
 				Translation: GetDefaultTranslation(),
 			}
 

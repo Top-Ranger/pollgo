@@ -72,6 +72,8 @@ type Translation struct {
 	Results             string
 	PollToLargeError    string
 	PollNoOptions       string
+	DeletePoll          string
+	PollIsDeleted       string
 }
 
 const defaultLanguage = "en"

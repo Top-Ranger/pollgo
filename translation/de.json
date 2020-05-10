@@ -41,5 +41,7 @@
     "SelectPollKind": "Umfrageart auswählen",
     "Results": "Ergebnisse",
     "PollToLargeError": "Umfrage ist zu groß. Bitte reduzieren Sie die Anzahl an Optionen.",
-    "PollNoOptions": "Umfrage ist leer. Bitte überprüfen Sie die Konfiguration der Umfrage."
+    "PollNoOptions": "Umfrage ist leer. Bitte überprüfen Sie die Konfiguration der Umfrage.",
+    "DeletePoll": "Umfrage löschen",
+    "PollIsDeleted": "Umfrage wurde gelöscht und ist nicht mehr verfügbar."
 }

@@ -71,6 +71,20 @@
       </form>
   </div>
 
+  <div class="even">
+    <details>
+      <summary>{{.Translation.DeletePoll}}</summary>
+      <form method="POST">
+        <input type="hidden" name="delete" value="true">
+        {{if .HasPassword}}
+          <p><label for="pw">{{.Translation.Password}}: </label><input type="password" id="pw" name="pw" maxlength="500" required></p>
+        {{end}}
+        <p><input type="submit" value="{{.Translation.DeletePoll}}"></p>
+      </form>
+    </details>
+    <p></p>
+  </div>
+
   <footer>
     <div>
       {{.Translation.CreatedBy}} <a href="https://msoll.eu/"><u>Marcus Soll</u></a> - <a href="/impressum.html"><u>{{.Translation.Impressum}}</u></a> - <a href="/dsgvo.html"><u>{{.Translation.PrivacyPolicy}}</u></a>
