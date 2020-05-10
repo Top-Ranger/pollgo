@@ -10,6 +10,10 @@ Für den sicheren und stabilen Betrieb der Website werden technische Daten sowie
 
 Sie haben unter Umständen die Möglichkeit, an Umfragen teilzunehmen oder zu erstellen. Sollten Sie an einer Umfrage teilnehmen oder eine erstellen, so werden die Daten gespeichert auf Grundlage ihrer Einwilligung nach DSGVO Art. 6. Die Daten werden nicht zurückverfolgbar gespeichert, sind also anonym. Dies bedeutet, dass sich eine einzelne Umfrage / Antwort nicht mehr auf eine Person zurückverfolgen lässt. Die Umfragen und Antworten werden öffentlich für jeden sichtbar angezeigt.
 
+## Mit Stern markieren
+
+Sie haben die Möglichkeit, Umfragen mit einem Stern zu markieren, um diese Umfragen später schneller wiederfinden zu können. Die Information, welche Umfragen Sie markiert haben, wird ausschließlich auf Ihrem Endgerät (z.B. Browser) gespeichert und nicht zum Server übertragen / nicht vom Server gespeichert. Bitte nutzen Sie die Funktionen Ihres Endgerätes, falls sie die Informationen löschen wollen.
+
 ## Ihre Rechte
 
 Sie haben folgende Rechte:
