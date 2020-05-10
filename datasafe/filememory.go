@@ -317,18 +317,22 @@ func (fm *fileMemory) worker() {
 				for len(fm.memory) > fm.MaximumMemory {
 					err := fm.save(helper[i].id)
 					if err != nil {
-						log.Printf("filememory: erroro saving %s: %s", helper[i].id, err.Error())
+						log.Printf("filememory: error saving %s: %s", helper[i].id, err.Error())
 					}
 					delete(fm.memory, helper[i].id)
 					i++
 				}
+				log.Printf("filememory: freed %d resources from memory", i)
 			}()
 		case <-fm.flushandclose:
 			func() {
 				fm.l.Lock()
 				defer fm.l.Unlock()
 				for k := range fm.memory {
-					fm.save(k)
+					err := fm.save(k)
+					if err != nil {
+						log.Printf("filememory: error saving %s: %s", k, err.Error())
+					}
 				}
 				fm.memory = make(map[string]FileMemoryPollResult, 0)
 				fm.active = false
