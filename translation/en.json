@@ -44,5 +44,9 @@
     "PollNoOptions": "Poll is empty. Please recheck the configuration.",
     "DeletePoll": "Delete poll",
     "PollIsDeleted": "Poll is deleted and can not be accessed any longer.",
-    "Starred": "Starred"
+    "Starred": "Starred",
+    "LoadConfiguration": "Load configuration",
+	"Configuration": "Configuration",
+	"MoreOptions": "More options",         
+	"ExportConfiguration": "Export configuration"
 }

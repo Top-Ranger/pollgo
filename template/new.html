@@ -23,13 +23,15 @@
 
   <div class="even">
     <p>{{.Translation.SelectPollKind}}:</p>
-    <p><input type="radio" id="select_normal" name="select" value="normal" onchange="if(this.checked){document.getElementById('normal_poll').removeAttribute('hidden');document.getElementById('date_poll').hidden = true;}"><label for="select_normal">{{.Translation.NormalPoll}}</label><br>
-    <input type="radio" id="select_date" name="select" value="date" onchange="if(this.checked){document.getElementById('date_poll').removeAttribute('hidden');document.getElementById('normal_poll').hidden = true;}"><label for="select_date">{{.Translation.AppointmentPoll}}</label></p>
+    <p><input type="radio" id="select_normal" name="select" value="normal" onchange="if(this.checked){document.getElementById('normal_poll').removeAttribute('hidden');document.getElementById('date_poll').hidden=true;document.getElementById('config_poll').hidden=true;}"><label for="select_normal">{{.Translation.NormalPoll}}</label></p>
+    <p><input type="radio" id="select_date" name="select" value="date" onchange="if(this.checked){document.getElementById('date_poll').removeAttribute('hidden');document.getElementById('normal_poll').hidden=true;document.getElementById('config_poll').hidden=true;}"><label for="select_date">{{.Translation.AppointmentPoll}}</label></p>
+    <p><input type="radio" id="select_config" name="select" value="config" onchange="if(this.checked){document.getElementById('config_poll').removeAttribute('hidden');document.getElementById('normal_poll').hidden=true;document.getElementById('date_poll').hidden=true;}"><label for="select_config">{{.Translation.LoadConfiguration}}</label></p>
   </div>
 
   <script>
     document.getElementById("select_normal").checked = false;
     document.getElementById("select_date").checked = false;
+    document.getElementById("select_config").checked = false;
   </script>
   
   <script>
@@ -160,6 +162,17 @@
       {{if .HasPassword}}<p><label for="date_pw">{{.Translation.Password}}: </label><input type="password" id="date_pw" name="pw" maxlength="500" required></p> <hr>{{end}}
       <input type="checkbox" id="dsgvo_date" name="dsgvo" onclick="document.getElementById('date_submit').disabled = !this.checked" required><label for=dsgvo_date>{{.Translation.AcceptPrivacyPolicy}}</label> <br>
       <p><input type="submit" id="date_submit" value="{{$.Translation.CreatePoll}}" disabled></p>
+    </form>
+  </div>
+
+  <div class="odd" id="config_poll" hidden>
+    <p>{{.Translation.LoadConfiguration}}:</p>
+    <form id="new_config" method="POST">
+      <input type="hidden" name="type" value="config">
+      <textarea id="textarea_config" name="config" rows="30" form="new_config" placeholder="{{.Translation.Configuration}}" maxlength="10000000"></textarea> <br> <hr>
+      {{if .HasPassword}}<p><label for="config_pw">{{.Translation.Password}}: </label><input type="password" id="config_pw" name="pw" maxlength="500" required></p> <hr>{{end}}
+      <input type="checkbox" id="dsgvo_config" name="dsgvo" onclick="document.getElementById('config_submit').disabled = !this.checked" required><label for=dsgvo_config>{{.Translation.AcceptPrivacyPolicy}}</label> <br>
+      <p><input type="submit" id="config_submit" value="{{$.Translation.CreatePoll}}" disabled></p>
     </form>
   </div>
 

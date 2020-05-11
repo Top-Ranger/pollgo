@@ -13,9 +13,8 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package registry provides a central way to register and use all available formatting options, saving backends, and question types.
-// All options should be registered prior to the program starting, normally through init()
-// Since the questionnaires are handled as immutable, it does not make much sense to register options later.
+// Package registry provides a central way to register and use all available saving backends.
+// All options should be registered prior to the program starting, normally through init().
 package registry
 
 import (

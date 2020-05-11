@@ -26,6 +26,7 @@
     function createStar() {
       var s = document.createElement("SPAN");
       s.textContent = "★";
+      s.setAttribute("style", "cursor: pointer;")
       s.onclick = function() {
         var a = JSON.parse(localStorage.getItem("pollgo_star"));
         var i = a.indexOf("{{.Key}}")
@@ -41,6 +42,7 @@
     function createNoStar() {
       var s = document.createElement("SPAN");
       s.textContent = "☆";
+      s.setAttribute("style", "cursor: pointer;")
       s.onclick = function() {
         var a = JSON.parse(localStorage.getItem("pollgo_star"));
         if(a === null) {
@@ -124,7 +126,12 @@
 
   <div class="even">
     <details>
-      <summary>{{.Translation.DeletePoll}}</summary>
+      <summary>{{.Translation.MoreOptions}}</summary>
+      <form method="POST" target="_blank">
+        <input type="hidden" name="exportConfig" value="true">
+        <p><input type="submit" value="{{.Translation.ExportConfiguration}}"></p>
+      </form>
+      <hr>
       <form method="POST">
         <input type="hidden" name="delete" value="true">
         {{if .HasPassword}}

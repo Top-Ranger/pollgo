@@ -44,5 +44,9 @@
     "PollNoOptions": "Umfrage ist leer. Bitte überprüfen Sie die Konfiguration der Umfrage.",
     "DeletePoll": "Umfrage löschen",
     "PollIsDeleted": "Umfrage wurde gelöscht und ist nicht mehr verfügbar.",
-    "Starred": "Mit Stern markiert"
+    "Starred": "Mit Stern markiert",
+    "LoadConfiguration": "Einstellungen laden",
+	"Configuration": "Einstellungen",
+	"MoreOptions": "Weitere Optionen",         
+	"ExportConfiguration": "Einstellungen exportieren"
 }

@@ -107,6 +107,28 @@ func sanitiseKey(key string) string {
 	return template.HTMLEscapeString(key)
 }
 
+// VerifyPollConfig will verify whether the configuration of the poll is valid.
+func VerifyPollConfig(p Poll) bool {
+	if len(p.AnswerOption) == 0 {
+		return false
+	}
+
+	for i := range p.AnswerOption {
+		if len(p.AnswerOption[i]) != 3 {
+			return false
+		}
+		if _, err := strconv.ParseFloat(p.AnswerOption[i][1], 64); err != nil {
+			return false
+		}
+	}
+
+	if len(p.Questions) == 0 {
+		return false
+	}
+
+	return true
+}
+
 // LoadPoll loads  and initialises the poll from the current provided configuration.
 // PLEASE NOTE: The loaded poll is not verified. If you use an untrusted source, you need to verify the poll else the behaviour is undefined.
 func LoadPoll(config []byte) (Poll, error) {
@@ -180,6 +202,18 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 					return
 				}
 				http.Redirect(rw, r, fmt.Sprintf("/%s", key), http.StatusSeeOther)
+				return
+			}
+
+			if r.Form.Get("exportConfig") == "true" {
+				b, err := p.ExportPoll()
+				if err != nil {
+					rw.WriteHeader(http.StatusInternalServerError)
+					t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation()}
+					textTemplate.Execute(rw, t)
+					return
+				}
+				rw.Write(b)
 				return
 			}
 
@@ -453,6 +487,32 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				textTemplate.Execute(rw, t)
 				return
 			}
+			p.initialised = true
+		case "config":
+			c := r.Form.Get("config")
+			if c == "" {
+				rw.WriteHeader(http.StatusBadRequest)
+				t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation()}
+				textTemplate.Execute(rw, t)
+				return
+			}
+			new, err := LoadPoll([]byte(c))
+			if err != nil {
+				rw.WriteHeader(http.StatusBadRequest)
+				t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation()}
+				textTemplate.Execute(rw, t)
+				return
+			}
+			if !VerifyPollConfig(new) {
+				rw.WriteHeader(http.StatusBadRequest)
+				t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation()}
+				textTemplate.Execute(rw, t)
+				return
+			}
+			p.AnswerOption = new.AnswerOption
+			p.Questions = new.Questions
+			p.Description = new.Description
+			p.Deleted = false
 			p.initialised = true
 		default:
 			rw.WriteHeader(http.StatusBadRequest)
