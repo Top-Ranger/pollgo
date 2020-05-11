@@ -115,15 +115,6 @@ pre {
     text-align: center;
 }
 
-.chart {
-    width: 30vw;
-    display: inline-block;
-}
-
-progress {
-    width: 100%;
-}
-
 .starlist {
     list-style: none;
     padding-left: 1ch;
