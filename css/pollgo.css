@@ -124,3 +124,7 @@ pre {
     padding-right: 1ch;
     content: "★";
 }
+
+.whitefont {
+    color: white;
+}

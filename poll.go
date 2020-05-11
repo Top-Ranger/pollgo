@@ -28,6 +28,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/go-playground/colors"
 )
 
 // Poll represents a single poll.
@@ -43,15 +45,16 @@ type Poll struct {
 }
 
 type pollTemplateStruct struct {
-	Key         string
-	Questions   []string
-	Answers     [][][]string // [][Question][text, colour]
-	Names       []string
-	Points      []float64
-	BestNumber  int
-	Description template.HTML
-	HasPassword bool
-	Translation Translation
+	Key             string
+	Questions       []string
+	Answers         [][][]string // [][Question][text, colour]
+	AnswerWhiteFont []bool
+	Names           []string
+	Points          []float64
+	BestNumber      int
+	Description     template.HTML
+	HasPassword     bool
+	Translation     Translation
 }
 
 type answerTemplateStruct struct {
@@ -133,6 +136,9 @@ func VerifyPollConfig(p Poll) bool {
 			return false
 		}
 		if _, err := strconv.ParseFloat(p.AnswerOption[i][1], 64); err != nil {
+			return false
+		}
+		if _, err := colors.ParseHEX(p.AnswerOption[i][2]); err != nil {
 			return false
 		}
 	}
@@ -370,6 +376,12 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				textTemplate.Execute(rw, t)
 				return
 			}
+			if !VerifyPollConfig(*p) {
+				rw.WriteHeader(http.StatusBadRequest)
+				t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation()}
+				textTemplate.Execute(rw, t)
+				return
+			}
 			p.initialised = true
 		case "date":
 			t := GetDefaultTranslation()
@@ -502,6 +514,12 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				textTemplate.Execute(rw, t)
 				return
 			}
+			if !VerifyPollConfig(*p) {
+				rw.WriteHeader(http.StatusBadRequest)
+				t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation()}
+				textTemplate.Execute(rw, t)
+				return
+			}
 			p.initialised = true
 		case "config":
 			c := r.Form.Get("config")
@@ -619,15 +637,16 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			}
 
 			td := pollTemplateStruct{
-				Key:         sanitiseKey(key),
-				Questions:   p.Questions,
-				Answers:     make([][][]string, len(n)),
-				Names:       n,
-				Points:      make([]float64, len(p.Questions)),
-				BestNumber:  0,
-				Description: Format([]byte(p.Description)),
-				HasPassword: len(config.Passwords) != 0,
-				Translation: GetDefaultTranslation(),
+				Key:             sanitiseKey(key),
+				Questions:       p.Questions,
+				Answers:         make([][][]string, len(n)),
+				AnswerWhiteFont: make([]bool, len(n)),
+				Names:           n,
+				Points:          make([]float64, len(p.Questions)),
+				BestNumber:      0,
+				Description:     Format([]byte(p.Description)),
+				HasPassword:     len(config.Passwords) != 0,
+				Translation:     GetDefaultTranslation(),
 			}
 
 			for i := range r {
@@ -635,12 +654,16 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				for a := range r[i] {
 					if r[i][a] < len(p.AnswerOption) {
 						answer[a] = []string{p.AnswerOption[r[i][a]][0], p.AnswerOption[r[i][a]][2]}
-						p, err := strconv.ParseFloat(p.AnswerOption[r[i][a]][1], 64)
+						f, err := strconv.ParseFloat(p.AnswerOption[r[i][a]][1], 64)
 						if err != nil {
-							p = 0.0
+							f = 0.0
 							log.Printf("Poll.HandleRequest (%s): strconv.ParseFloat(p.AnswerOption[r[%d][%d]][1], 64) %s", key, i, a, err.Error())
 						}
-						td.Points[a] += p
+						td.Points[a] += f
+						col, err := colors.ParseHEX(p.AnswerOption[r[i][a]][2])
+						if err == nil {
+							td.AnswerWhiteFont[i] = col.IsDark()
+						}
 					} else {
 						// Something is wrong
 						log.Printf("Poll.HandleRequest (%s):  r[%d][%d] < len(p.AnswerOption)", key, i, a)
