@@ -98,7 +98,7 @@
       <tr>
       <td style="white-space:nowrap;">{{index $.Names $i}}</td>
       {{range $I, $E := $.Questions }}
-      <td class="centre{{if index $.AnswerWhiteFont $i}} whitefont{{end}}" title="{{index $.Names $i}} - {{index $e $I 0}}" bgcolor="{{index $e $I 1}}">{{index $e $I 0}}</td>
+      <td class="centre{{if index $.AnswerWhiteFont $i $I}} whitefont{{end}}" title="{{index $.Names $i}} - {{index $e $I 0}}" bgcolor="{{index $e $I 1}}">{{index $e $I 0}}</td>
       {{end}}
       </tr>
       {{end}}

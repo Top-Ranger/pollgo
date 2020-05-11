@@ -48,7 +48,7 @@ type pollTemplateStruct struct {
 	Key             string
 	Questions       []string
 	Answers         [][][]string // [][Question][text, colour]
-	AnswerWhiteFont []bool
+	AnswerWhiteFont [][]bool
 	Names           []string
 	Points          []float64
 	BestNumber      int
@@ -640,7 +640,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				Key:             sanitiseKey(key),
 				Questions:       p.Questions,
 				Answers:         make([][][]string, len(n)),
-				AnswerWhiteFont: make([]bool, len(n)),
+				AnswerWhiteFont: make([][]bool, len(n)),
 				Names:           n,
 				Points:          make([]float64, len(p.Questions)),
 				BestNumber:      0,
@@ -651,6 +651,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 
 			for i := range r {
 				answer := make([][]string, len(p.Questions))
+				whitefont := make([]bool, len(p.Questions))
 				for a := range r[i] {
 					if r[i][a] < len(p.AnswerOption) {
 						answer[a] = []string{p.AnswerOption[r[i][a]][0], p.AnswerOption[r[i][a]][2]}
@@ -662,7 +663,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 						td.Points[a] += f
 						col, err := colors.ParseHEX(p.AnswerOption[r[i][a]][2])
 						if err == nil {
-							td.AnswerWhiteFont[i] = col.IsDark()
+							whitefont[a] = col.IsDark()
 						}
 					} else {
 						// Something is wrong
@@ -671,6 +672,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 					}
 				}
 				td.Answers[i] = answer
+				td.AnswerWhiteFont[i] = whitefont
 			}
 
 			max := math.Inf(-1)
