@@ -16,6 +16,7 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -70,6 +71,20 @@ type newTemplateStruct struct {
 var pollTemplate *template.Template
 var answerTemplate *template.Template
 var newTemplate *template.Template
+
+var deleteTemplate = template.Must(template.New("poll").Parse(`
+<script>
+try {
+	var a = JSON.parse(localStorage.getItem("pollgo_star"));
+	var i = a.indexOf("{{.}}");
+	if(i != -1) {
+		a.splice(i, 1)
+		localStorage.setItem("pollgo_star", JSON.stringify(a));
+	}
+} catch (e) {
+}
+</script>
+`))
 
 func init() {
 	b, err := ioutil.ReadFile("template/poll.html")
@@ -541,7 +556,10 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 		if p.Deleted {
 			rw.WriteHeader(http.StatusGone)
 			tl := GetDefaultTranslation()
-			t := textTemplateStruct{template.HTML(template.HTMLEscapeString(tl.PollIsDeleted)), tl}
+			buf := bytes.Buffer{}
+			deleteTemplate.Execute(&buf, key)
+			text := strings.Join([]string{template.HTMLEscapeString(tl.PollIsDeleted), buf.String()}, "\n")
+			t := textTemplateStruct{template.HTML(text), tl}
 			textTemplate.Execute(rw, t)
 			return
 		}
