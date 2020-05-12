@@ -81,6 +81,7 @@ type Translation struct {
 	ExportConfiguration string
 	Comment             string
 	Unknown             string
+	SelectAll           string
 }
 
 const defaultLanguage = "en"

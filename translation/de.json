@@ -50,5 +50,6 @@
 	"MoreOptions": "Weitere Optionen",         
     "ExportConfiguration": "Einstellungen exportieren",
     "Comment": "Kommentar",
-    "Unknown": "unbekannt"
+    "Unknown": "unbekannt",
+    "SelectAll": "Alle auswählen"
 }
