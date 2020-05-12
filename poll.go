@@ -50,6 +50,7 @@ type pollTemplateStruct struct {
 	Answers         [][][]string // [][Question][text, colour]
 	AnswerWhiteFont [][]bool
 	Names           []string
+	Comments        []string
 	Points          []float64
 	BestNumber      int
 	Description     template.HTML
@@ -264,7 +265,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				}
 				results[i] = ai
 			}
-			err = safe.SavePollResult(key, r.Form.Get("name"), results)
+			err = safe.SavePollResult(key, r.Form.Get("name"), r.Form.Get("comment"), results)
 			if err != nil {
 				rw.WriteHeader(http.StatusInternalServerError)
 				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation()}
@@ -609,7 +610,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			}
 
 			// Poll requested
-			r, n, err := safe.GetPollResult(key)
+			r, n, c, err := safe.GetPollResult(key)
 			if err != nil {
 				rw.WriteHeader(http.StatusInternalServerError)
 				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation()}
@@ -642,6 +643,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				Answers:         make([][][]string, len(n)),
 				AnswerWhiteFont: make([][]bool, len(n)),
 				Names:           n,
+				Comments:        c,
 				Points:          make([]float64, len(p.Questions)),
 				BestNumber:      0,
 				Description:     Format([]byte(p.Description)),

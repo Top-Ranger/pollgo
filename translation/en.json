@@ -48,5 +48,7 @@
     "LoadConfiguration": "Load configuration",
 	"Configuration": "Configuration",
 	"MoreOptions": "More options",         
-	"ExportConfiguration": "Export configuration"
+    "ExportConfiguration": "Export configuration",
+    "Comment": "Comment",
+    "Unknown": "unknown"
 }

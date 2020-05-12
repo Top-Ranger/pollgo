@@ -48,5 +48,7 @@
     "LoadConfiguration": "Einstellungen laden",
 	"Configuration": "Einstellungen",
 	"MoreOptions": "Weitere Optionen",         
-	"ExportConfiguration": "Einstellungen exportieren"
+    "ExportConfiguration": "Einstellungen exportieren",
+    "Comment": "Kommentar",
+    "Unknown": "unbekannt"
 }

@@ -68,6 +68,7 @@ type fileMemory struct {
 type FileMemoryPollResult struct {
 	Data       [][]int
 	Names      []string
+	Comments   []string
 	Config     []byte
 	LastAccess time.Time
 }
@@ -108,12 +109,17 @@ func (fm *fileMemory) testload(pollID string) error {
 	dec := gob.NewDecoder(f)
 	var data [][]int
 	var names []string
+	var comments []string
 	var config []byte
 	err = dec.Decode(&data)
 	if err != nil {
 		return err
 	}
 	err = dec.Decode(&names)
+	if err != nil {
+		return err
+	}
+	err = dec.Decode(&comments)
 	if err != nil {
 		return err
 	}
@@ -124,13 +130,14 @@ func (fm *fileMemory) testload(pollID string) error {
 	fm.memory[pollID] = FileMemoryPollResult{
 		Data:       data,
 		Names:      names,
+		Comments:   comments,
 		Config:     config,
 		LastAccess: time.Now(),
 	}
 	return nil
 }
 
-func (fm *fileMemory) SavePollResult(pollID, name string, results []int) error {
+func (fm *fileMemory) SavePollResult(pollID, name, comment string, results []int) error {
 	fm.l.Lock()
 	defer fm.l.Unlock()
 	if !fm.active {
@@ -149,32 +156,33 @@ func (fm *fileMemory) SavePollResult(pollID, name string, results []int) error {
 	p := fm.memory[pollID]
 	p.Data = append(p.Data, results)
 	p.Names = append(p.Names, name)
+	p.Comments = append(p.Comments, comment)
 	p.LastAccess = time.Now()
 	fm.memory[pollID] = p
 	return nil
 }
 
-func (fm *fileMemory) GetPollResult(pollID string) ([][]int, []string, error) {
+func (fm *fileMemory) GetPollResult(pollID string) ([][]int, []string, []string, error) {
 	fm.l.Lock()
 	defer fm.l.Unlock()
 	if !fm.active {
-		return nil, nil, ErrNotActive
+		return nil, nil, nil, ErrNotActive
 	}
 
 	err := fm.testload(pollID)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	pollID, err = fm.getInternalID(pollID)
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
 	p := fm.memory[pollID]
 	p.LastAccess = time.Now()
 	fm.memory[pollID] = p
-	return p.Data, p.Names, nil
+	return p.Data, p.Names, p.Comments, nil
 }
 
 func (fm *fileMemory) SavePollConfig(pollID string, config []byte) error {
@@ -360,6 +368,10 @@ func (fm *fileMemory) save(ID string) error {
 		return err
 	}
 	err = enc.Encode(&p.Names)
+	if err != nil {
+		return err
+	}
+	err = enc.Encode(&p.Comments)
 	if err != nil {
 		return err
 	}

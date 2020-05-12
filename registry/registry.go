@@ -33,8 +33,8 @@ func (a AlreadyRegisteredError) Error() string {
 // All results must be stored in the same order they are added.
 // All methods must be save for parallel usage.
 type DataSafe interface {
-	SavePollResult(pollID, name string, results []int) error
-	GetPollResult(pollID string) ([][]int, []string, error)
+	SavePollResult(pollID, name, comment string, results []int) error
+	GetPollResult(pollID string) ([][]int, []string, []string, error)
 	SavePollConfig(pollID string, config []byte) error
 	GetPollConfig(pollID string) ([]byte, error)
 	LoadConfig(data []byte) error

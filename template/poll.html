@@ -96,7 +96,7 @@
       <tbody>
       {{range $i, $e := .Answers }}
       <tr>
-      <td style="white-space:nowrap;">{{index $.Names $i}}</td>
+      <td style="white-space:nowrap;">{{if index $.Comments $i}}<abbr title="{{index $.Comments $i}}">{{end}}{{index $.Names $i}}{{if not (index $.Names $i)}}<em>[{{$.Translation.Unknown}}]</em>{{end}}{{if index $.Comments $i}}</abbr>{{end}}</td>
       {{range $I, $E := $.Questions }}
       <td class="centre{{if index $.AnswerWhiteFont $i $I}} whitefont{{end}}" title="{{index $.Names $i}} - {{index $e $I 0}}" bgcolor="{{index $e $I 1}}">{{index $e $I 0}}</td>
       {{end}}

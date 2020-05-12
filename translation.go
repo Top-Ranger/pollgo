@@ -79,6 +79,8 @@ type Translation struct {
 	Configuration       string
 	MoreOptions         string
 	ExportConfiguration string
+	Comment             string
+	Unknown             string
 }
 
 const defaultLanguage = "en"
