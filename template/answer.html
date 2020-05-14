@@ -45,7 +45,7 @@
         <tr>
         <td></td>
         {{range $i, $e := .AnswerOption}}
-        <td class="centre" bgcolor="{{index $e 2}}"><button form="detach from form" onclick="e=document.getElementById('_tbody');l=e.getElementsByTagName('input');for(var i=0;i<l.length;i++){if(l[i].type==='radio'&&l[i].value==='{{$i}}'){l[i].checked=true}}">{{$.Translation.SelectAll}}: {{index $e 0}}</button></td>
+        <td class="centre" bgcolor="{{index $e 2}}"><button form="detach from form" onclick="e=document.getElementById('_tbody');l=e.getElementsByTagName('input');for(var i=0;i<l.length;i++){if(l[i].type==='radio'&&l[i].value==='{{$i}}'){l[i].checked=true}}">{{$.Translation.SelectAll}}</button></td>
         {{end}}
         </tr>
         <tbody id="_tbody">
