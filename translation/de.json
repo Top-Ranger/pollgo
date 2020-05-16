@@ -51,5 +51,6 @@
     "ExportConfiguration": "Einstellungen exportieren",
     "Comment": "Kommentar",
     "Unknown": "unbekannt",
-    "SelectAll": "Alle auswählen"
+    "SelectAll": "Alle auswählen",
+    "FunctionRequiresJavaScript": "Diese Funktion benötigt JavaScript."
 }

@@ -51,5 +51,6 @@
     "ExportConfiguration": "Export configuration",
     "Comment": "Comment",
     "Unknown": "unknown",
-    "SelectAll": "Select all"
+    "SelectAll": "Select all",
+    "FunctionRequiresJavaScript": "This function requires JavaScript enabled to work."
 }

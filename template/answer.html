@@ -62,9 +62,13 @@
       </div>
       <p><label for="comment">{{.Translation.Comment}} <em>({{.Translation.Optional}})</em>:</label> <input type="text" id="comment" name="comment" placeholder="{{.Translation.Comment}}" maxlength="150"></p>
       <p><input type="checkbox" id="dsgvo_answer" name="dsgvo" onclick="document.getElementById('submit_answer').disabled = !this.checked" required><label for=dsgvo_answer>{{.Translation.AcceptPrivacyPolicy}}</label></p>
-      <p><input id="submit_answer" type="submit" value="{{.Translation.Submit}}" disabled></p>
+      <p><input id="submit_answer" type="submit" value="{{.Translation.Submit}}"></p>
     </form>
   </div>
+
+  <script>
+    document.getElementById("submit_answer").disabled = !document.getElementById("dsgvo_answer").checked
+  </script>
 
   <footer>
     <div>

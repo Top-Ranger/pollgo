@@ -63,6 +63,7 @@ const startpage = `
 
 <div class="even">
 <h2>%s:</h2>
+<noscript>%s</noscript>
 <ul class="starlist" id="starlist">
 </ul>
 </div>
@@ -205,7 +206,7 @@ func initialiseServer() error {
 func rootHandle(rw http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == "/" {
 		tl := GetDefaultTranslation()
-		text := fmt.Sprintf(startpage, template.HTMLEscapeString(tl.Starred))
+		text := fmt.Sprintf(startpage, template.HTMLEscapeString(tl.Starred), template.HTMLEscapeString(tl.FunctionRequiresJavaScript))
 		t := textTemplateStruct{template.HTML(text), tl}
 		textTemplate.Execute(rw, t)
 		return
