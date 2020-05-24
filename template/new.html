@@ -19,6 +19,18 @@
     </div>
   </header>
 
+  <script>
+  try {
+    var a = JSON.parse(localStorage.getItem("pollgo_star"));
+    var i = a.indexOf("{{.Key}}");
+    if(i != -1) {
+      a.splice(i, 1)
+      localStorage.setItem("pollgo_star", JSON.stringify(a));
+    }
+  } catch (e) {
+  }
+  </script>
+
   <h1>{{.Translation.NewPoll}} - {{.Key}}</h1>
 
   <div class="even">
