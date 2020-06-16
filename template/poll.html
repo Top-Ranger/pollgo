@@ -112,7 +112,7 @@
       <tr>
       <td class="th-cell" style="white-space:nowrap;"><strong>{{.Translation.Points}}</strong></td>
       {{range $i, $e := .Points }}
-      <td class="centre{{if eq $i $.BestNumber}} th-cell{{end}}" title='{{index $.Questions $i}} - {{printf "%.2f" $e}}'>{{printf "%.2f" $e}}</td>
+      <td class="centre{{if eq $e $.BestValue}} th-cell{{end}}" title='{{index $.Questions $i}} - {{printf "%.2f" $e}}'>{{printf "%.2f" $e}}</td>
       {{end}}
       </tr>
       </tbody>

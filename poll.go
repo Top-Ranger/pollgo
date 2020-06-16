@@ -52,7 +52,7 @@ type pollTemplateStruct struct {
 	Names           []string
 	Comments        []string
 	Points          []float64
-	BestNumber      int
+	BestValue       float64
 	Description     template.HTML
 	HasPassword     bool
 	Translation     Translation
@@ -645,7 +645,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				Names:           n,
 				Comments:        c,
 				Points:          make([]float64, len(p.Questions)),
-				BestNumber:      0,
+				BestValue:       math.Inf(-1),
 				Description:     Format([]byte(p.Description)),
 				HasPassword:     len(config.Passwords) != 0,
 				Translation:     GetDefaultTranslation(),
@@ -677,12 +677,8 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				td.AnswerWhiteFont[i] = whitefont
 			}
 
-			max := math.Inf(-1)
 			for i := range td.Points {
-				if td.Points[i] > max {
-					td.BestNumber = i
-					max = td.Points[i]
-				}
+				td.BestValue = math.Max(td.BestValue, td.Points[i])
 			}
 
 			err = pollTemplate.Execute(rw, td)
