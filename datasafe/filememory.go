@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -71,6 +72,7 @@ type FileMemoryPollResult struct {
 	Comments   []string
 	Config     []byte
 	LastAccess time.Time
+	Deleted    bool
 }
 
 func (fm fileMemory) getInternalID(ID string) (string, error) {
@@ -79,62 +81,6 @@ func (fm fileMemory) getInternalID(ID string) (string, error) {
 		return "", ErrInvalidID
 	}
 	return strings.ReplaceAll(ID, string(os.PathSeparator), "﷐"), nil
-}
-
-// caller has to lock
-func (fm *fileMemory) testload(pollID string) error {
-	pollID, err := fm.getInternalID(pollID)
-	if err != nil {
-		return err
-	}
-
-	_, ok := fm.memory[pollID]
-	if ok {
-		// already loaded
-		return nil
-	}
-
-	f, err := os.Open(filepath.Join(fm.Path, pollID))
-	defer f.Close()
-	if os.IsNotExist(err) {
-		// No data was ever saved, just create an empty result
-		fm.memory[pollID] = FileMemoryPollResult{
-			LastAccess: time.Now(),
-		}
-		return nil
-	} else if err != nil {
-		// some file error
-		return err
-	}
-	dec := gob.NewDecoder(f)
-	var data [][]int
-	var names []string
-	var comments []string
-	var config []byte
-	err = dec.Decode(&data)
-	if err != nil {
-		return err
-	}
-	err = dec.Decode(&names)
-	if err != nil {
-		return err
-	}
-	err = dec.Decode(&comments)
-	if err != nil {
-		return err
-	}
-	err = dec.Decode(&config)
-	if err != nil {
-		return err
-	}
-	fm.memory[pollID] = FileMemoryPollResult{
-		Data:       data,
-		Names:      names,
-		Comments:   comments,
-		Config:     config,
-		LastAccess: time.Now(),
-	}
-	return nil
 }
 
 func (fm *fileMemory) SavePollResult(pollID, name, comment string, results []int) error {
@@ -229,6 +175,80 @@ func (fm *fileMemory) GetPollConfig(pollID string) ([]byte, error) {
 	p.LastAccess = time.Now()
 	fm.memory[pollID] = p
 	return p.Config, nil
+}
+
+func (fm *fileMemory) MarkPollDeleted(pollID string) error {
+	fm.l.Lock()
+	defer fm.l.Unlock()
+	if !fm.active {
+		return ErrNotActive
+	}
+	err := fm.testload(pollID)
+	if err != nil {
+		return err
+	}
+
+	pollID, err = fm.getInternalID(pollID)
+	if err != nil {
+		return err
+	}
+
+	p := fm.memory[pollID]
+	p.Deleted = true
+	p.LastAccess = time.Now()
+	fm.memory[pollID] = p
+	return nil
+}
+
+func (fm *fileMemory) RunGC() error {
+	fm.l.Lock()
+	defer fm.l.Unlock()
+	if !fm.active {
+		return ErrNotActive
+	}
+
+	// First remove deleted entries from memory
+	for k := range fm.memory {
+		if fm.memory[k].Deleted {
+			err := fm.save(k)
+			if err != nil {
+				return err
+			}
+			delete(fm.memory, k)
+		}
+	}
+
+	// Test all files
+	dir, err := os.Open(fm.Path)
+	if err != nil {
+		return err
+	}
+	defer dir.Close()
+
+	files, err := dir.Readdir(-1)
+	if err != nil {
+		return err
+	}
+
+	for f := range files {
+		if files[f].IsDir() || !files[f].Mode().IsRegular() {
+			continue
+		}
+		fmpr, err := fm.load(files[f].Name())
+		if err != nil {
+			return err
+		}
+		// File is deleted if either it is marked as deleted or there was never a configuration written to it (e.g. never a poll created).
+		// Second check is included for old PollGo versions
+		if fmpr.Deleted || fmpr.Config == nil {
+			// Delete file
+			err := os.Remove(filepath.Join(fm.Path, files[f].Name()))
+			if err != nil {
+				return err
+			}
+		}
+	}
+	return nil
 }
 
 func (fm *fileMemory) LoadConfig(data []byte) error {
@@ -351,11 +371,89 @@ func (fm *fileMemory) worker() {
 	}
 }
 
+// Internal functions
+
+// caller has to lock
+func (fm *fileMemory) testload(pollID string) error {
+	pollID, err := fm.getInternalID(pollID)
+	if err != nil {
+		return err
+	}
+
+	_, ok := fm.memory[pollID]
+	if ok {
+		// already loaded
+		return nil
+	}
+
+	fmpr, err := fm.load(pollID)
+	if err != nil {
+		return err
+	}
+
+	fm.memory[pollID] = fmpr
+	return nil
+}
+
+func (fm *fileMemory) load(ID string) (FileMemoryPollResult, error) {
+	f, err := os.Open(filepath.Join(fm.Path, ID))
+	defer f.Close()
+	if os.IsNotExist(err) {
+		// No data was ever saved, just create an empty result
+		return FileMemoryPollResult{LastAccess: time.Now()}, nil
+	} else if err != nil {
+		// some file error
+		return FileMemoryPollResult{LastAccess: time.Now()}, err
+	}
+	dec := gob.NewDecoder(f)
+	var data [][]int
+	var names []string
+	var comments []string
+	var config []byte
+	var deleted bool
+	err = dec.Decode(&data)
+	if err != nil && err != io.EOF {
+		return FileMemoryPollResult{LastAccess: time.Now()}, err
+	}
+	err = dec.Decode(&names)
+	if err != nil && err != io.EOF {
+		return FileMemoryPollResult{LastAccess: time.Now()}, err
+	}
+	err = dec.Decode(&comments)
+	if err != nil && err != io.EOF {
+		return FileMemoryPollResult{LastAccess: time.Now()}, err
+	}
+	err = dec.Decode(&config)
+	if err != nil && err != io.EOF {
+		return FileMemoryPollResult{LastAccess: time.Now()}, err
+	}
+	err = dec.Decode(&deleted)
+	if err != nil && err != io.EOF {
+		return FileMemoryPollResult{LastAccess: time.Now()}, err
+	}
+	fmpr := FileMemoryPollResult{
+		Data:       data,
+		Names:      names,
+		Comments:   comments,
+		Config:     config,
+		LastAccess: time.Now(),
+		Deleted:    deleted,
+	}
+	return fmpr, nil
+}
+
 func (fm *fileMemory) save(ID string) error {
 	p, ok := fm.memory[ID]
 	if !ok {
 		return fmt.Errorf("filememory: can not find %s", ID)
 	}
+
+	// Don't save polls with no configuration
+	if p.Config == nil {
+		return nil
+	}
+
+	// Save poll
 	f, err := os.Create(filepath.Join(fm.Path, ID))
 	defer f.Close()
 	if err != nil {
@@ -376,6 +474,10 @@ func (fm *fileMemory) save(ID string) error {
 		return err
 	}
 	err = enc.Encode(&p.Config)
+	if err != nil {
+		return err
+	}
+	err = enc.Encode(&p.Deleted)
 	if err != nil {
 		return err
 	}

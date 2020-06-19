@@ -223,6 +223,13 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 					textTemplate.Execute(rw, t)
 					return
 				}
+				err = safe.MarkPollDeleted(key)
+				if err != nil {
+					rw.WriteHeader(http.StatusInternalServerError)
+					t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation()}
+					textTemplate.Execute(rw, t)
+					return
+				}
 				http.Redirect(rw, r, fmt.Sprintf("/%s", key), http.StatusSeeOther)
 				return
 			}

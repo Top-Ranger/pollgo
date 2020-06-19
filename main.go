@@ -40,6 +40,7 @@ type ConfigStruct struct {
 	Passwords          []string
 	DataSafe           string
 	DataSafeConfig     string
+	RunGCOnStart       bool
 }
 
 var config ConfigStruct
@@ -97,6 +98,10 @@ func main() {
 	}
 
 	safe = datasafe
+
+	if config.RunGCOnStart {
+		safe.RunGC()
+	}
 
 	RunServer()
 

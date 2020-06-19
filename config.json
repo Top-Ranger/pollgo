@@ -6,5 +6,6 @@
     "PathDSGVO": "DSGVO.md",
     "Passwords": ["test"],
     "DataSafe": "FileMemory",
-    "DataSafeConfig": "FileMemory.json"
+    "DataSafeConfig": "FileMemory.json",
+    "RunGCOnStart": true
  }
