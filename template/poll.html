@@ -146,7 +146,7 @@
   <script>
     var abbrs = document.querySelectorAll('abbr[title]');
     for(var i = 0; i < abbrs.length; i++) {
-      abbrs[i].addEventListener('click', function(event){alert(event.currentTarget.title)})
+      abbrs[i].addEventListener('click', function(event){alert("" + event.currentTarget.innerText + "\n\n" + event.currentTarget.title)})
       console.log("added 'click' to abbr")
     }
   </script>
