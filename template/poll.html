@@ -143,6 +143,14 @@
     <p></p>
   </div>
 
+  <script>
+    var abbrs = document.querySelectorAll('abbr[title]');
+    for(var i = 0; i < abbrs.length; i++) {
+      abbrs[i].addEventListener('click', function(event){alert(event.currentTarget.title)})
+      console.log("added 'click' to abbr")
+    }
+  </script>
+
   <footer>
     <div>
       {{.Translation.CreatedBy}} <a href="https://msoll.eu/"><u>Marcus Soll</u></a> - <a href="/impressum.html"><u>{{.Translation.Impressum}}</u></a> - <a href="/dsgvo.html"><u>{{.Translation.PrivacyPolicy}}</u></a>
