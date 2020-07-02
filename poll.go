@@ -496,7 +496,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			for start.Before(end) {
 				process := start
 				start = start.AddDate(0, 0, 1)
-				if !weekdayMap[start.Weekday()] {
+				if !weekdayMap[process.Weekday()] {
 					continue
 				}
 				if r.Form.Get("notime") != "" {
