@@ -30,8 +30,6 @@
 
   <div class="odd">
     <form method="POST">
-      <p><label for="name">{{.Translation.Name}} <em>({{.Translation.Optional}})</em>:</label> <input type="text" id="name" name="name" placeholder="{{.Translation.Name}}" maxlength="150"></p>
-
       <div style="width: 100%; overflow-x: scroll;">
         <table style="width: auto;">
         <thead>
@@ -60,7 +58,17 @@
         </tbody>
         </table>
       </div>
-      <p><label for="comment">{{.Translation.Comment}} <em>({{.Translation.Optional}})</em>:</label> <input type="text" id="comment" name="comment" placeholder="{{.Translation.Comment}}" maxlength="150"></p>
+
+      <table style="border: none;">
+      <tr style="border: none; background-color: inherit;">
+        <td style="border: none;"><label for="name">{{.Translation.Name}} <em>({{.Translation.Optional}})</em>:</label></td>
+        <td style="border: none;"><input type="text" id="name" name="name" placeholder="{{.Translation.Name}}" maxlength="150"></td>
+      </tr>
+      <tr style="border: none; background-color: inherit;">
+        <td style="border: none;"><label for="comment">{{.Translation.Comment}} <em>({{.Translation.Optional}})</em>:</label></td>
+        <td style="border: none;"><input type="text" id="comment" name="comment" placeholder="{{.Translation.Comment}}" maxlength="150"></td>
+      </tr>
+      </table>
       <p><input type="checkbox" id="dsgvo_answer" name="dsgvo" onclick="document.getElementById('submit_answer').disabled = !this.checked" required><label for=dsgvo_answer>{{.Translation.AcceptPrivacyPolicy}}</label></p>
       <p><input id="submit_answer" type="submit" value="{{.Translation.Submit}}"></p>
     </form>
