@@ -175,6 +175,8 @@ func (p Poll) ExportPoll() ([]byte, error) {
 
 // HandleRequest handles a web request to this poll. The key needs to be provided.
 func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string) {
+	rw.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+
 	switch r.Method {
 	case http.MethodPost:
 		if p.initialised {
