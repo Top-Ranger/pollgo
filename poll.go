@@ -193,14 +193,20 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				// Delete this poll and return
 
 				// Test password first
-				if len(config.Passwords) != 0 {
-					pw := encodePassword(r.Form.Get("pw"))
-					correct := false
-					for i := range config.Passwords {
-						if pw == config.Passwords[i] {
-							correct = true
-							break
-						}
+				if config.AuthenticationEnabled {
+					user, pw := r.Form.Get("user"), r.Form.Get("pw")
+					if len(user) == 0 || len(pw) == 0 {
+						rw.WriteHeader(http.StatusForbidden)
+						t := textTemplateStruct{"403 Forbidden", GetDefaultTranslation()}
+						textTemplate.Execute(rw, t)
+						return
+					}
+					correct, err := authenticater.Authenticate(user, pw)
+					if err != nil {
+						rw.WriteHeader(http.StatusInternalServerError)
+						t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation()}
+						textTemplate.Execute(rw, t)
+						return
 					}
 					if !correct {
 						rw.WriteHeader(http.StatusForbidden)
@@ -300,14 +306,20 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			return
 		}
 		// Test password first
-		if len(config.Passwords) != 0 {
-			pw := encodePassword(r.Form.Get("pw"))
-			correct := false
-			for i := range config.Passwords {
-				if pw == config.Passwords[i] {
-					correct = true
-					break
-				}
+		if config.AuthenticationEnabled {
+			user, pw := r.Form.Get("user"), r.Form.Get("pw")
+			if len(user) == 0 || len(pw) == 0 {
+				rw.WriteHeader(http.StatusForbidden)
+				t := textTemplateStruct{"403 Forbidden", GetDefaultTranslation()}
+				textTemplate.Execute(rw, t)
+				return
+			}
+			correct, err := authenticater.Authenticate(user, pw)
+			if err != nil {
+				rw.WriteHeader(http.StatusInternalServerError)
+				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation()}
+				textTemplate.Execute(rw, t)
+				return
 			}
 			if !correct {
 				rw.WriteHeader(http.StatusForbidden)
@@ -656,7 +668,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				Points:          make([]float64, len(p.Questions)),
 				BestValue:       math.Inf(-1),
 				Description:     Format([]byte(p.Description)),
-				HasPassword:     len(config.Passwords) != 0,
+				HasPassword:     config.AuthenticationEnabled,
 				Translation:     GetDefaultTranslation(),
 			}
 
@@ -699,7 +711,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 		// This is a new poll
 		td := newTemplateStruct{
 			Key:         sanitiseKey(key),
-			HasPassword: len(config.Passwords) != 0,
+			HasPassword: config.AuthenticationEnabled,
 			Translation: GetDefaultTranslation(),
 		}
 		err := newTemplate.Execute(rw, td)

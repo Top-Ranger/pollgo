@@ -26,25 +26,29 @@ import (
 	"os/signal"
 	"syscall"
 
+	_ "github.com/Top-Ranger/pollgo/authenticater"
 	_ "github.com/Top-Ranger/pollgo/datasafe"
 	"github.com/Top-Ranger/pollgo/registry"
 )
 
 // ConfigStruct contains all configuration options for PollGo!
 type ConfigStruct struct {
-	Language           string
-	MaxNumberQuestions int
-	Address            string
-	PathImpressum      string
-	PathDSGVO          string
-	Passwords          []string
-	DataSafe           string
-	DataSafeConfig     string
-	RunGCOnStart       bool
+	Language              string
+	MaxNumberQuestions    int
+	Address               string
+	PathImpressum         string
+	PathDSGVO             string
+	AuthenticationEnabled bool
+	Authenticater         string
+	AuthenticaterConfig   string
+	DataSafe              string
+	DataSafeConfig        string
+	RunGCOnStart          bool
 }
 
 var config ConfigStruct
 var safe registry.DataSafe
+var authenticater registry.Authenticater
 
 func loadConfig(path string) (ConfigStruct, error) {
 	log.Printf("main: Loading config (%s)", path)
@@ -57,10 +61,6 @@ func loadConfig(path string) (ConfigStruct, error) {
 	err = json.Unmarshal(b, &c)
 	if err != nil {
 		return ConfigStruct{}, errors.New(fmt.Sprintln("Error while parsing config.json:", err))
-	}
-
-	for i := range c.Passwords {
-		c.Passwords[i] = encodePassword(c.Passwords[i])
 	}
 
 	return c, nil
@@ -82,22 +82,44 @@ func main() {
 	}
 	log.Printf("main: Setting language to '%s'", config.Language)
 
-	datasafe, ok := registry.GetDataSafe(config.DataSafe)
-	if !ok {
-		log.Panicf("main: Unknown data safe %s", config.DataSafe)
+	{
+		datasafe, ok := registry.GetDataSafe(config.DataSafe)
+		if !ok {
+			log.Panicf("main: Unknown data safe %s", config.DataSafe)
+		}
+
+		b, err := ioutil.ReadFile(config.DataSafeConfig)
+		if err != nil {
+			log.Panicln(err)
+		}
+
+		err = datasafe.LoadConfig(b)
+		if err != nil {
+			log.Panicln(err)
+		}
+
+		safe = datasafe
 	}
 
-	b, err := ioutil.ReadFile(config.DataSafeConfig)
-	if err != nil {
-		log.Panicln(err)
-	}
+	if config.AuthenticationEnabled {
+		a, ok := registry.GetAuthenticater(config.Authenticater)
+		if !ok {
+			log.Panicf("main: Unknown authenticater %s", config.Authenticater)
+		}
 
-	err = datasafe.LoadConfig(b)
-	if err != nil {
-		log.Panicln(err)
-	}
+		b, err := ioutil.ReadFile(config.AuthenticaterConfig)
+		if err != nil {
+			log.Panicln(err)
+		}
 
-	safe = datasafe
+		err = a.LoadConfig(b)
+		if err != nil {
+			log.Panicln(err)
+		}
+
+		authenticater = a
+
+	}
 
 	if config.RunGCOnStart {
 		safe.RunGC()
@@ -112,7 +134,7 @@ func main() {
 
 	for range s {
 		StopServer()
-		datasafe.FlushAndClose()
+		safe.FlushAndClose()
 		return
 	}
 }

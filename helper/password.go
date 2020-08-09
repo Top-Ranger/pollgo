@@ -13,7 +13,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package helper
 
 import (
 	"crypto/rand"
@@ -33,7 +33,9 @@ func init() {
 	}
 }
 
-func encodePassword(pw string) string {
+// EncodePassword encodes the password as a secure hash.
+// It is not consistent across restarts.
+func EncodePassword(pw string) string {
 	key := argon2.IDKey([]byte(pw), passwordSalt, 1, 64*1024, 2, passwordEncodedLength)
 	return base32.StdEncoding.EncodeToString(key)
 }

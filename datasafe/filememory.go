@@ -33,7 +33,7 @@ import (
 )
 
 func init() {
-	fm := new(fileMemory)
+	fm := new(FileMemory)
 	fm.l = new(sync.Mutex)
 	fm.flushandclose = make(chan bool, 1)
 	fm.flushandclosereturn = make(chan bool, 1)
@@ -53,7 +53,8 @@ var ErrInvalidID = errors.New("filememory got invalid ID")
 // FileMemoryName contains the name of the DataSafe
 const FileMemoryName = "FileMemory"
 
-type fileMemory struct {
+// FileMemory holds a number of polls in memory and saves all other to disk.
+type FileMemory struct {
 	ClearInterval int
 	MaximumMemory int
 	Path          string
@@ -65,7 +66,8 @@ type fileMemory struct {
 	flushandclosereturn chan bool
 }
 
-// FileMemoryPollResult is a helper struct which holds the Results of a poll
+// FileMemoryPollResult is a helper struct which holds the Results of a poll.
+// The data is only guaranteed to be saved to disk after FlushAndClose is called.
 type FileMemoryPollResult struct {
 	Data       [][]int
 	Names      []string
@@ -75,7 +77,7 @@ type FileMemoryPollResult struct {
 	Deleted    bool
 }
 
-func (fm fileMemory) getInternalID(ID string) (string, error) {
+func (fm FileMemory) getInternalID(ID string) (string, error) {
 	// ﷐
 	if strings.Contains(ID, "﷐") {
 		return "", ErrInvalidID
@@ -83,7 +85,8 @@ func (fm fileMemory) getInternalID(ID string) (string, error) {
 	return strings.ReplaceAll(ID, string(os.PathSeparator), "﷐"), nil
 }
 
-func (fm *fileMemory) SavePollResult(pollID, name, comment string, results []int) error {
+// SavePollResult saves the results of a single poll.
+func (fm *FileMemory) SavePollResult(pollID, name, comment string, results []int) error {
 	fm.l.Lock()
 	defer fm.l.Unlock()
 	if !fm.active {
@@ -108,7 +111,8 @@ func (fm *fileMemory) SavePollResult(pollID, name, comment string, results []int
 	return nil
 }
 
-func (fm *fileMemory) GetPollResult(pollID string) ([][]int, []string, []string, error) {
+// GetPollResult returns the results of a poll.
+func (fm *FileMemory) GetPollResult(pollID string) ([][]int, []string, []string, error) {
 	fm.l.Lock()
 	defer fm.l.Unlock()
 	if !fm.active {
@@ -131,7 +135,8 @@ func (fm *fileMemory) GetPollResult(pollID string) ([][]int, []string, []string,
 	return p.Data, p.Names, p.Comments, nil
 }
 
-func (fm *fileMemory) SavePollConfig(pollID string, config []byte) error {
+// SavePollConfig saves the poll configuration.
+func (fm *FileMemory) SavePollConfig(pollID string, config []byte) error {
 	fm.l.Lock()
 	defer fm.l.Unlock()
 	if !fm.active {
@@ -154,7 +159,8 @@ func (fm *fileMemory) SavePollConfig(pollID string, config []byte) error {
 	return nil
 }
 
-func (fm *fileMemory) GetPollConfig(pollID string) ([]byte, error) {
+// GetPollConfig returns the poll configuration.
+func (fm *FileMemory) GetPollConfig(pollID string) ([]byte, error) {
 	fm.l.Lock()
 	defer fm.l.Unlock()
 	if !fm.active {
@@ -177,7 +183,8 @@ func (fm *fileMemory) GetPollConfig(pollID string) ([]byte, error) {
 	return p.Config, nil
 }
 
-func (fm *fileMemory) MarkPollDeleted(pollID string) error {
+// MarkPollDeleted marks a poll as deleted. It is not deleted imidiately, but on next garbage collect.
+func (fm *FileMemory) MarkPollDeleted(pollID string) error {
 	fm.l.Lock()
 	defer fm.l.Unlock()
 	if !fm.active {
@@ -200,7 +207,8 @@ func (fm *fileMemory) MarkPollDeleted(pollID string) error {
 	return nil
 }
 
-func (fm *fileMemory) RunGC() error {
+// RunGC runs the garbage collection and removes deleted polls.
+func (fm *FileMemory) RunGC() error {
 	fm.l.Lock()
 	defer fm.l.Unlock()
 	if !fm.active {
@@ -251,7 +259,8 @@ func (fm *fileMemory) RunGC() error {
 	return nil
 }
 
-func (fm *fileMemory) LoadConfig(data []byte) error {
+// LoadConfig loads the configuration of the FileMemory from JSON encoded data.
+func (fm *FileMemory) LoadConfig(data []byte) error {
 	fm.l.Lock()
 	defer fm.l.Unlock()
 	if fm.active {
@@ -279,7 +288,9 @@ func (fm *fileMemory) LoadConfig(data []byte) error {
 	return nil
 }
 
-func (fm *fileMemory) FlushAndClose() {
+// FlushAndClose saves all poll to disk.
+// It is only guarateed that the data is saved to disk if this function is called.
+func (fm *FileMemory) FlushAndClose() {
 	fm.l.Lock()
 	if !fm.active {
 		fm.l.Unlock()
@@ -297,6 +308,8 @@ func (fm *fileMemory) FlushAndClose() {
 	for range fm.flushandclosereturn {
 	}
 }
+
+// Internal
 
 type fileMemoryHelper struct {
 	id string
@@ -317,7 +330,7 @@ func (h fileMemoryHelperArray) Swap(i, j int) {
 	h[i], h[j] = h[j], h[i]
 }
 
-func (fm *fileMemory) worker() {
+func (fm *FileMemory) worker() {
 	fm.l.Lock()
 	duration := time.Duration(fm.ClearInterval) * time.Minute
 	fm.l.Unlock()
@@ -371,10 +384,8 @@ func (fm *fileMemory) worker() {
 	}
 }
 
-// Internal functions
-
 // caller has to lock
-func (fm *fileMemory) testload(pollID string) error {
+func (fm *FileMemory) testload(pollID string) error {
 	pollID, err := fm.getInternalID(pollID)
 	if err != nil {
 		return err
@@ -395,7 +406,7 @@ func (fm *fileMemory) testload(pollID string) error {
 	return nil
 }
 
-func (fm *fileMemory) load(ID string) (FileMemoryPollResult, error) {
+func (fm *FileMemory) load(ID string) (FileMemoryPollResult, error) {
 	f, err := os.Open(filepath.Join(fm.Path, ID))
 	defer f.Close()
 	if os.IsNotExist(err) {
@@ -442,7 +453,7 @@ func (fm *fileMemory) load(ID string) (FileMemoryPollResult, error) {
 	return fmpr, nil
 }
 
-func (fm *fileMemory) save(ID string) error {
+func (fm *FileMemory) save(ID string) error {
 	p, ok := fm.memory[ID]
 	if !ok {
 		return fmt.Errorf("filememory: can not find %s", ID)

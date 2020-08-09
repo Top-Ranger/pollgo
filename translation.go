@@ -59,6 +59,7 @@ type Translation struct {
 	AddOption                  string
 	Yes                        string
 	No                         string
+	Username                   string
 	Password                   string
 	AcceptPrivacyPolicy        string
 	CreatePoll                 string

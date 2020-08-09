@@ -135,7 +135,16 @@
       <form method="POST">
         <input type="hidden" name="delete" value="true">
         {{if .HasPassword}}
-          <p><label for="pw">{{.Translation.Password}}: </label><input type="password" id="pw" name="pw" maxlength="500" required></p>
+          <table style="border: none;">
+            <tr style="border: none; background-color: inherit;">
+              <td style="border: none;"><label for="user">{{.Translation.Username}}: </label></td>
+              <td style="border: none;"><input type="text" id="user" name="user" maxlength="500" required></td>
+            </tr>
+            <tr style="border: none; background-color: inherit;">
+             <td style="border: none;"><label for="pw">{{.Translation.Password}}: </label></td>
+             <td style="border: none;"><input type="password" id="pw" name="pw" maxlength="500" required></td>
+            </tr>
+          </table>
         {{end}}
         <p><input type="submit" value="{{.Translation.DeletePoll}}"></p>
       </form>

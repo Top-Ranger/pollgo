@@ -43,9 +43,19 @@ type DataSafe interface {
 	FlushAndClose()
 }
 
+// Authenticater allows to validate a username/password combination.
+// It can safely be assumed that LoadConfig will only be called once before Authenticate will be called.
+// Authenticate must be safely callable in parallel.
+type Authenticater interface {
+	LoadConfig(b []byte) error
+	Authenticate(user, password string) (bool, error)
+}
+
 var (
-	knownDataSafes      = make(map[string]DataSafe)
-	knownDataSafesMutex = sync.RWMutex{}
+	knownDataSafes          = make(map[string]DataSafe)
+	knownDataSafesMutex     = sync.RWMutex{}
+	knownAuthenticater      = make(map[string]Authenticater)
+	knownAuthenticaterMutex = sync.RWMutex{}
 )
 
 // RegisterDataSafe registeres a data safe.
@@ -70,4 +80,28 @@ func GetDataSafe(name string) (DataSafe, bool) {
 	defer knownDataSafesMutex.RUnlock()
 	f, ok := knownDataSafes[name]
 	return f, ok
+}
+
+// RegisterDataSafe registeres a data safe.
+// The name of the data safe is used as an identifier and must be unique.
+// You can savely use it in parallel.
+func RegisterAuthenticater(a Authenticater, name string) error {
+	knownAuthenticaterMutex.Lock()
+	defer knownAuthenticaterMutex.Unlock()
+
+	_, ok := knownAuthenticater[name]
+	if ok {
+		return AlreadyRegisteredError("Authenticater already registered")
+	}
+	knownAuthenticater[name] = a
+	return nil
+}
+
+// GetDataSafe returns a data safe.
+// The bool indicates whether it existed. You can only use it if the bool is true.
+func GetAuthenticater(name string) (Authenticater, bool) {
+	knownAuthenticaterMutex.RLock()
+	defer knownAuthenticaterMutex.RUnlock()
+	a, ok := knownAuthenticater[name]
+	return a, ok
 }

@@ -4,7 +4,9 @@
     "Address": "localhost:34625",
     "PathImpressum": "impressum.md",
     "PathDSGVO": "DSGVO.md",
-    "Passwords": ["test"],
+    "AuthenticationEnabled": true,
+    "Authenticater": "PlainFile",
+    "AuthenticaterConfig": "./plainFile.json",
     "DataSafe": "FileMemory",
     "DataSafeConfig": "FileMemory.json",
     "RunGCOnStart": true
