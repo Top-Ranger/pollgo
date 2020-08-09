@@ -15,7 +15,7 @@ To run it, simply use the following commands:
 go build
 ./pollgo
 
-To build the LDAP authemticater, you have to use the following build command:
+To build the LDAP authenticater, you have to use the following build command:
 go build -tags="ldap"
 
 A sample configration can be found at 'config.json'.
