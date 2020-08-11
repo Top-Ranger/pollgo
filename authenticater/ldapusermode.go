@@ -36,12 +36,27 @@ func init() {
 // LDAPUserMode is an authenticator for using LDAP in user mode.
 // It creates a new connection for every call to Authenticate and tries to bind the user.
 type LDAPUserMode struct {
-	Endpoint                      string
-	UseStartTLS                   bool
-	BindUserPattern               string
-	TimeLimit                     int
-	BaseDN                        string
-	LDAPUserFilter                string
+	// The endpoint of the LDAP server. Supports ldap://, ldaps://, ldapi://
+	Endpoint string
+
+	// Whether to use StartTLS. Must be disabled on encrypted connections.
+	UseStartTLS bool
+
+	// Pattern for the initial bind. Must contain a single %s which is replaced by the username.
+	BindUserPattern string
+
+	// Time limit for the LDAP search
+	TimeLimit int
+
+	// Search base dn used for searching user DN.
+	BaseDN string
+
+	// Filter used in LDAP search to find the user. Must contain a single %s which is replaced by the username.
+	LDAPUserFilter string
+
+	// If set to true, certificate validation will be skipped.
+	// Only set this to true if you absolutely must and have a secure connection, otherwise user data (including passwords) might be leaked!
+	// If you are unsure, set it to false.
 	InsecureSkipCertificateVerify bool
 }
 
