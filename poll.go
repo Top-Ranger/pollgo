@@ -56,6 +56,7 @@ type pollTemplateStruct struct {
 	Description     template.HTML
 	HasPassword     bool
 	Translation     Translation
+	ServerPath      string
 }
 
 type answerTemplateStruct struct {
@@ -64,12 +65,14 @@ type answerTemplateStruct struct {
 	Questions    []string
 	Description  template.HTML
 	Translation  Translation
+	ServerPath   string
 }
 
 type newTemplateStruct struct {
 	Key         string
 	HasPassword bool
 	Translation Translation
+	ServerPath  string
 }
 
 var pollTemplate *template.Template
@@ -184,7 +187,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			err := r.ParseForm()
 			if err != nil {
 				rw.WriteHeader(http.StatusInternalServerError)
-				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation()}
+				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
 				textTemplate.Execute(rw, t)
 				return
 			}
@@ -197,20 +200,20 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 					user, pw := r.Form.Get("user"), r.Form.Get("pw")
 					if len(user) == 0 || len(pw) == 0 {
 						rw.WriteHeader(http.StatusForbidden)
-						t := textTemplateStruct{"403 Forbidden", GetDefaultTranslation()}
+						t := textTemplateStruct{"403 Forbidden", GetDefaultTranslation(), config.ServerPath}
 						textTemplate.Execute(rw, t)
 						return
 					}
 					correct, err := authenticater.Authenticate(user, pw)
 					if err != nil {
 						rw.WriteHeader(http.StatusInternalServerError)
-						t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation()}
+						t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
 						textTemplate.Execute(rw, t)
 						return
 					}
 					if !correct {
 						rw.WriteHeader(http.StatusForbidden)
-						t := textTemplateStruct{"403 Forbidden", GetDefaultTranslation()}
+						t := textTemplateStruct{"403 Forbidden", GetDefaultTranslation(), config.ServerPath}
 						textTemplate.Execute(rw, t)
 						return
 					}
@@ -220,21 +223,21 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				b, err := p.ExportPoll()
 				if err != nil {
 					rw.WriteHeader(http.StatusInternalServerError)
-					t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation()}
+					t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
 					textTemplate.Execute(rw, t)
 					return
 				}
 				err = safe.SavePollConfig(key, b)
 				if err != nil {
 					rw.WriteHeader(http.StatusInternalServerError)
-					t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation()}
+					t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
 					textTemplate.Execute(rw, t)
 					return
 				}
 				err = safe.MarkPollDeleted(key)
 				if err != nil {
 					rw.WriteHeader(http.StatusInternalServerError)
-					t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation()}
+					t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
 					textTemplate.Execute(rw, t)
 					return
 				}
@@ -246,7 +249,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				b, err := p.ExportPoll()
 				if err != nil {
 					rw.WriteHeader(http.StatusInternalServerError)
-					t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation()}
+					t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
 					textTemplate.Execute(rw, t)
 					return
 				}
@@ -257,7 +260,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			// Test DSGVO first
 			if r.Form.Get("dsgvo") == "" {
 				rw.WriteHeader(http.StatusForbidden)
-				t := textTemplateStruct{"403 Forbidden", GetDefaultTranslation()}
+				t := textTemplateStruct{"403 Forbidden", GetDefaultTranslation(), config.ServerPath}
 				textTemplate.Execute(rw, t)
 				return
 			}
@@ -268,13 +271,13 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				ai, err := strconv.Atoi(a)
 				if err != nil {
 					rw.WriteHeader(http.StatusBadRequest)
-					t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation()}
+					t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation(), config.ServerPath}
 					textTemplate.Execute(rw, t)
 					return
 				}
 				if ai >= len(p.AnswerOption) {
 					rw.WriteHeader(http.StatusBadRequest)
-					t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation()}
+					t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation(), config.ServerPath}
 					textTemplate.Execute(rw, t)
 					return
 				}
@@ -283,7 +286,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			err = safe.SavePollResult(key, r.Form.Get("name"), r.Form.Get("comment"), results)
 			if err != nil {
 				rw.WriteHeader(http.StatusInternalServerError)
-				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation()}
+				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
 				textTemplate.Execute(rw, t)
 				return
 			}
@@ -293,7 +296,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 		// This is a new poll
 		if p.initialised {
 			rw.WriteHeader(http.StatusBadRequest)
-			t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation()}
+			t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation(), config.ServerPath}
 			textTemplate.Execute(rw, t)
 			return
 		}
@@ -301,7 +304,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 		err := r.ParseForm()
 		if err != nil {
 			rw.WriteHeader(http.StatusInternalServerError)
-			t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation()}
+			t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
 			textTemplate.Execute(rw, t)
 			return
 		}
@@ -310,20 +313,20 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			user, pw := r.Form.Get("user"), r.Form.Get("pw")
 			if len(user) == 0 || len(pw) == 0 {
 				rw.WriteHeader(http.StatusForbidden)
-				t := textTemplateStruct{"403 Forbidden", GetDefaultTranslation()}
+				t := textTemplateStruct{"403 Forbidden", GetDefaultTranslation(), config.ServerPath}
 				textTemplate.Execute(rw, t)
 				return
 			}
 			correct, err := authenticater.Authenticate(user, pw)
 			if err != nil {
 				rw.WriteHeader(http.StatusInternalServerError)
-				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation()}
+				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
 				textTemplate.Execute(rw, t)
 				return
 			}
 			if !correct {
 				rw.WriteHeader(http.StatusForbidden)
-				t := textTemplateStruct{"403 Forbidden", GetDefaultTranslation()}
+				t := textTemplateStruct{"403 Forbidden", GetDefaultTranslation(), config.ServerPath}
 				textTemplate.Execute(rw, t)
 				return
 			}
@@ -331,7 +334,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 		// Test DSGVO first
 		if r.Form.Get("dsgvo") == "" {
 			rw.WriteHeader(http.StatusForbidden)
-			t := textTemplateStruct{"403 Forbidden", GetDefaultTranslation()}
+			t := textTemplateStruct{"403 Forbidden", GetDefaultTranslation(), config.ServerPath}
 			textTemplate.Execute(rw, t)
 			return
 		}
@@ -356,7 +359,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				if budget < 0 {
 					rw.WriteHeader(http.StatusBadRequest)
 					tl := GetDefaultTranslation()
-					t := textTemplateStruct{template.HTML(template.HTMLEscapeString(tl.PollToLargeError)), tl}
+					t := textTemplateStruct{template.HTML(template.HTMLEscapeString(tl.PollToLargeError)), tl, config.ServerPath}
 					textTemplate.Execute(rw, t)
 					return
 				}
@@ -386,7 +389,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				if budget < 0 {
 					rw.WriteHeader(http.StatusBadRequest)
 					tl := GetDefaultTranslation()
-					t := textTemplateStruct{template.HTML(template.HTMLEscapeString(tl.PollToLargeError)), tl}
+					t := textTemplateStruct{template.HTML(template.HTMLEscapeString(tl.PollToLargeError)), tl, config.ServerPath}
 					textTemplate.Execute(rw, t)
 					return
 				}
@@ -394,13 +397,13 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			if len(p.Questions) == 0 || len(p.AnswerOption) == 0 {
 				rw.WriteHeader(http.StatusBadRequest)
 				tl := GetDefaultTranslation()
-				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(tl.PollNoOptions)), tl}
+				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(tl.PollNoOptions)), tl, config.ServerPath}
 				textTemplate.Execute(rw, t)
 				return
 			}
 			if !VerifyPollConfig(*p) {
 				rw.WriteHeader(http.StatusBadRequest)
-				t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation()}
+				t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation(), config.ServerPath}
 				textTemplate.Execute(rw, t)
 				return
 			}
@@ -416,14 +419,14 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			start, err := time.Parse(dateRead, r.Form.Get("start"))
 			if err != nil {
 				rw.WriteHeader(http.StatusInternalServerError)
-				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation()}
+				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
 				textTemplate.Execute(rw, t)
 				return
 			}
 			end, err := time.Parse(dateRead, r.Form.Get("end"))
 			if err != nil {
 				rw.WriteHeader(http.StatusInternalServerError)
-				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation()}
+				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
 				textTemplate.Execute(rw, t)
 				return
 			}
@@ -467,28 +470,28 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				tn[0], err = strconv.Atoi(split[0])
 				if err != nil {
 					rw.WriteHeader(http.StatusBadRequest)
-					t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation()}
+					t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation(), config.ServerPath}
 					textTemplate.Execute(rw, t)
 					return
 				}
 				tn[1], err = strconv.Atoi(split[1])
 				if err != nil {
 					rw.WriteHeader(http.StatusBadRequest)
-					t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation()}
+					t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation(), config.ServerPath}
 					textTemplate.Execute(rw, t)
 					return
 				}
 
 				if tn[0] < 0 || tn[0] > 23 {
 					rw.WriteHeader(http.StatusBadRequest)
-					t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation()}
+					t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation(), config.ServerPath}
 					textTemplate.Execute(rw, t)
 					return
 				}
 
 				if tn[1] < 0 || tn[1] > 59 {
 					rw.WriteHeader(http.StatusBadRequest)
-					t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation()}
+					t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation(), config.ServerPath}
 					textTemplate.Execute(rw, t)
 					return
 				}
@@ -524,7 +527,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				if budget < 0 {
 					rw.WriteHeader(http.StatusBadRequest)
 					tl := GetDefaultTranslation()
-					t := textTemplateStruct{template.HTML(template.HTMLEscapeString(tl.PollToLargeError)), tl}
+					t := textTemplateStruct{template.HTML(template.HTMLEscapeString(tl.PollToLargeError)), tl, config.ServerPath}
 					textTemplate.Execute(rw, t)
 					return
 				}
@@ -532,13 +535,13 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			if len(p.Questions) == 0 || len(p.AnswerOption) == 0 {
 				rw.WriteHeader(http.StatusBadRequest)
 				tl := GetDefaultTranslation()
-				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(tl.PollNoOptions)), tl}
+				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(tl.PollNoOptions)), tl, config.ServerPath}
 				textTemplate.Execute(rw, t)
 				return
 			}
 			if !VerifyPollConfig(*p) {
 				rw.WriteHeader(http.StatusBadRequest)
-				t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation()}
+				t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation(), config.ServerPath}
 				textTemplate.Execute(rw, t)
 				return
 			}
@@ -547,20 +550,20 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			c := r.Form.Get("config")
 			if c == "" {
 				rw.WriteHeader(http.StatusBadRequest)
-				t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation()}
+				t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation(), config.ServerPath}
 				textTemplate.Execute(rw, t)
 				return
 			}
 			new, err := LoadPoll([]byte(c))
 			if err != nil {
 				rw.WriteHeader(http.StatusBadRequest)
-				t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation()}
+				t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation(), config.ServerPath}
 				textTemplate.Execute(rw, t)
 				return
 			}
 			if !VerifyPollConfig(new) {
 				rw.WriteHeader(http.StatusBadRequest)
-				t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation()}
+				t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation(), config.ServerPath}
 				textTemplate.Execute(rw, t)
 				return
 			}
@@ -571,21 +574,21 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			p.initialised = true
 		default:
 			rw.WriteHeader(http.StatusBadRequest)
-			t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation()}
+			t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation(), config.ServerPath}
 			textTemplate.Execute(rw, t)
 			return
 		}
 		b, err := p.ExportPoll()
 		if err != nil {
 			rw.WriteHeader(http.StatusInternalServerError)
-			t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation()}
+			t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
 			textTemplate.Execute(rw, t)
 			return
 		}
 		err = safe.SavePollConfig(key, b)
 		if err != nil {
 			rw.WriteHeader(http.StatusInternalServerError)
-			t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation()}
+			t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
 			textTemplate.Execute(rw, t)
 			return
 		}
@@ -599,7 +602,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			buf := bytes.Buffer{}
 			deleteTemplate.Execute(&buf, key)
 			text := strings.Join([]string{template.HTMLEscapeString(tl.PollIsDeleted), buf.String()}, "\n")
-			t := textTemplateStruct{template.HTML(text), tl}
+			t := textTemplateStruct{template.HTML(text), tl, config.ServerPath}
 			textTemplate.Execute(rw, t)
 			return
 		}
@@ -609,7 +612,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			err := r.ParseForm()
 			if err != nil {
 				rw.WriteHeader(http.StatusInternalServerError)
-				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation()}
+				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
 				textTemplate.Execute(rw, t)
 				return
 			}
@@ -622,6 +625,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 					Questions:    p.Questions,
 					Description:  Format([]byte(p.Description)),
 					Translation:  GetDefaultTranslation(),
+					ServerPath:   config.ServerPath,
 				}
 				err = answerTemplate.Execute(rw, td)
 				if err != nil {
@@ -634,7 +638,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			r, n, c, err := safe.GetPollResult(key)
 			if err != nil {
 				rw.WriteHeader(http.StatusInternalServerError)
-				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation()}
+				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
 				textTemplate.Execute(rw, t)
 				return
 			}
@@ -643,7 +647,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			if len(r) != len(n) {
 				rw.WriteHeader(http.StatusInternalServerError)
 				log.Printf("Poll.HandleRequest (%s):  len(r) != len(n)", key)
-				t := textTemplateStruct{"len(r) != len(n)", GetDefaultTranslation()}
+				t := textTemplateStruct{"len(r) != len(n)", GetDefaultTranslation(), config.ServerPath}
 				textTemplate.Execute(rw, t)
 				return
 			}
@@ -652,7 +656,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				if len(r[i]) != len(p.Questions) {
 					rw.WriteHeader(http.StatusInternalServerError)
 					log.Printf("Poll.HandleRequest (%s):  len(r[%d]) != len(p.Questions)", key, i)
-					t := textTemplateStruct{"len(r[i]) != len(p.Questions)", GetDefaultTranslation()}
+					t := textTemplateStruct{"len(r[i]) != len(p.Questions)", GetDefaultTranslation(), config.ServerPath}
 					textTemplate.Execute(rw, t)
 					return
 				}
@@ -670,6 +674,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				Description:     Format([]byte(p.Description)),
 				HasPassword:     config.AuthenticationEnabled,
 				Translation:     GetDefaultTranslation(),
+				ServerPath:      config.ServerPath,
 			}
 
 			for i := range r {
@@ -713,6 +718,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			Key:         sanitiseKey(key),
 			HasPassword: config.AuthenticationEnabled,
 			Translation: GetDefaultTranslation(),
+			ServerPath:  config.ServerPath,
 		}
 		err := newTemplate.Execute(rw, td)
 		if err != nil {

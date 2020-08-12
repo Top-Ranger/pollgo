@@ -34,6 +34,7 @@ import (
 var serverMutex sync.Mutex
 var serverStarted bool
 var server http.Server
+var rootPath string
 
 var textTemplate *template.Template
 
@@ -89,6 +90,7 @@ try {
 type textTemplateStruct struct {
 	Text        template.HTML
 	Translation Translation
+	ServerPath  string
 }
 
 func initialiseServer() error {
@@ -98,17 +100,19 @@ func initialiseServer() error {
 	server = http.Server{Addr: config.Address}
 
 	// Do setup
+	rootPath = strings.Join([]string{config.ServerPath, "/"}, "")
+
 	// DSGVO
 	b, err := ioutil.ReadFile(config.PathDSGVO)
 	if err != nil {
 		return err
 	}
-	text := textTemplateStruct{Format(b), GetDefaultTranslation()}
+	text := textTemplateStruct{Format(b), GetDefaultTranslation(), config.ServerPath}
 	output := bytes.NewBuffer(make([]byte, 0, len(text.Text)*2))
 	textTemplate.Execute(output, text)
 	dsgvo = output.Bytes()
 
-	http.HandleFunc("/dsgvo.html", func(rw http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(strings.Join([]string{config.ServerPath, "/dsgvo.html"}, ""), func(rw http.ResponseWriter, r *http.Request) {
 		rw.Write(dsgvo)
 	})
 
@@ -117,16 +121,16 @@ func initialiseServer() error {
 	if err != nil {
 		return err
 	}
-	text = textTemplateStruct{Format(b), GetDefaultTranslation()}
+	text = textTemplateStruct{Format(b), GetDefaultTranslation(), config.ServerPath}
 	output = bytes.NewBuffer(make([]byte, 0, len(text.Text)*2))
 	textTemplate.Execute(output, text)
 	impressum = output.Bytes()
-	http.HandleFunc("/impressum.html", func(rw http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(strings.Join([]string{config.ServerPath, "/impressum.html"}, ""), func(rw http.ResponseWriter, r *http.Request) {
 		rw.Write(impressum)
 	})
 
 	// static files
-	for _, d := range []string{"css/", "static/", "font/"} {
+	for _, d := range []string{"static/", "font/"} {
 		filepath.Walk(d, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				log.Panicln("server: Error wile caching files:", err)
@@ -141,6 +145,39 @@ func initialiseServer() error {
 					return err
 				}
 				cachedFiles[path] = b
+				return nil
+			}
+			return nil
+		})
+	}
+
+	// static files needing ServerPath replaced
+	for _, d := range []string{"css/"} {
+		filepath.Walk(d, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				log.Panicln("server: Error wile caching files:", err)
+			}
+
+			if info.Mode().IsRegular() {
+				log.Println("static file handler: Caching file", path)
+
+				b, err := ioutil.ReadFile(path)
+				if err != nil {
+					log.Println("static file handler: Error reading file:", err)
+					return err
+				}
+				t, err := template.New(path).Parse(string(b))
+				if err != nil {
+					log.Println("static file handler: Error parsing file:", err)
+					return err
+				}
+				buf := bytes.Buffer{}
+				err = t.Execute(&buf, struct{ ServerPath string }{config.ServerPath})
+				if err != nil {
+					log.Println("static file handler: Error executing template:", err)
+					return err
+				}
+				cachedFiles[path] = buf.Bytes()
 				return nil
 			}
 			return nil
@@ -166,6 +203,7 @@ func initialiseServer() error {
 
 		// Send file if existing in cache
 		path := r.URL.Path
+		path = strings.TrimPrefix(path, config.ServerPath)
 		path = strings.TrimPrefix(path, "/")
 		data, ok := cachedFiles[path]
 		if !ok {
@@ -189,12 +227,12 @@ func initialiseServer() error {
 		}
 	}
 
-	http.HandleFunc("/css/", staticHandle)
-	http.HandleFunc("/static/", staticHandle)
-	http.HandleFunc("/font/", staticHandle)
-	http.HandleFunc("/js/", staticHandle)
+	http.HandleFunc(strings.Join([]string{config.ServerPath, "/css/"}, ""), staticHandle)
+	http.HandleFunc(strings.Join([]string{config.ServerPath, "/static/"}, ""), staticHandle)
+	http.HandleFunc(strings.Join([]string{config.ServerPath, "/font/"}, ""), staticHandle)
+	http.HandleFunc(strings.Join([]string{config.ServerPath, "/js/"}, ""), staticHandle)
 
-	http.HandleFunc("/favicon.ico", func(rw http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(strings.Join([]string{config.ServerPath, "/favicon.ico"}, ""), func(rw http.ResponseWriter, r *http.Request) {
 		// Check for ETag
 		v, ok := r.Header["If-None-Match"]
 		if ok {
@@ -217,7 +255,7 @@ func initialiseServer() error {
 	})
 
 	// robots.txt
-	http.HandleFunc("/robots.txt", func(rw http.ResponseWriter, r *http.Request) {
+	http.HandleFunc(strings.Join([]string{config.ServerPath, "/robots.txt"}, ""), func(rw http.ResponseWriter, r *http.Request) {
 		rw.Write(robottxt)
 	})
 
@@ -226,10 +264,10 @@ func initialiseServer() error {
 }
 
 func rootHandle(rw http.ResponseWriter, r *http.Request) {
-	if r.URL.Path == "/" {
+	if r.URL.Path == rootPath || r.URL.Path == config.ServerPath {
 		tl := GetDefaultTranslation()
 		text := fmt.Sprintf(startpage, template.HTMLEscapeString(tl.Starred), template.HTMLEscapeString(tl.FunctionRequiresJavaScript))
-		t := textTemplateStruct{template.HTML(text), tl}
+		t := textTemplateStruct{template.HTML(text), tl, config.ServerPath}
 		textTemplate.Execute(rw, t)
 		return
 	}
@@ -240,7 +278,7 @@ func rootHandle(rw http.ResponseWriter, r *http.Request) {
 	c, err := safe.GetPollConfig(key)
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
-		t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation()}
+		t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
 		textTemplate.Execute(rw, t)
 		return
 	}
@@ -248,7 +286,7 @@ func rootHandle(rw http.ResponseWriter, r *http.Request) {
 	p, err := LoadPoll(c)
 	if err != nil {
 		rw.WriteHeader(http.StatusInternalServerError)
-		t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation()}
+		t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
 		textTemplate.Execute(rw, t)
 		return
 	}

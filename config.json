@@ -9,5 +9,6 @@
     "AuthenticaterConfig": "./plainFile.json",
     "DataSafe": "FileMemory",
     "DataSafeConfig": "FileMemory.json",
-    "RunGCOnStart": true
+    "RunGCOnStart": true,
+    "ServerPath": "/"
  }

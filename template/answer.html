@@ -9,8 +9,8 @@
   <meta name="author" content="Marcus Soll"/>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="author" href="https://msoll.eu/">
-  <link rel="stylesheet" href="/css/pollgo.css">
-  <link rel="icon" type="image/vnd.microsoft.icon" href="/static/favicon.ico">
+  <link rel="stylesheet" href="{{.ServerPath}}/css/pollgo.css">
+  <link rel="icon" type="image/vnd.microsoft.icon" href="{{.ServerPath}}/static/favicon.ico">
 </head>
 
 <body>
@@ -86,7 +86,7 @@
 
   <footer>
     <div>
-      {{.Translation.CreatedBy}} <a href="https://msoll.eu/"><u>Marcus Soll</u></a> - <a href="/impressum.html" target="_blank"><u>{{.Translation.Impressum}}</u></a> - <a href="/dsgvo.html" target="_blank"><u>{{.Translation.PrivacyPolicy}}</u></a>
+      {{.Translation.CreatedBy}} <a href="https://msoll.eu/"><u>Marcus Soll</u></a> - <a href="{{.ServerPath}}/impressum.html" target="_blank"><u>{{.Translation.Impressum}}</u></a> - <a href="{{.ServerPath}}/dsgvo.html" target="_blank"><u>{{.Translation.PrivacyPolicy}}</u></a>
     </div>
   </footer>
 </body>
