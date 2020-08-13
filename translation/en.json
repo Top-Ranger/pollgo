@@ -53,5 +53,6 @@
     "Comment": "Comment",
     "Unknown": "unknown",
     "SelectAll": "Select all",
-    "FunctionRequiresJavaScript": "This function requires JavaScript enabled to work."
+    "FunctionRequiresJavaScript": "This function requires JavaScript enabled to work.",
+    "UserNotCreator": "user is not creator"
 }

@@ -84,6 +84,7 @@ type Translation struct {
 	Unknown                    string
 	SelectAll                  string
 	FunctionRequiresJavaScript string
+	UserNotCreator             string
 }
 
 const defaultLanguage = "en"

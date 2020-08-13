@@ -75,6 +75,7 @@ type FileMemoryPollResult struct {
 	Config     []byte
 	LastAccess time.Time
 	Deleted    bool
+	Creator    string
 }
 
 func (fm FileMemory) getInternalID(ID string) (string, error) {
@@ -181,6 +182,55 @@ func (fm *FileMemory) GetPollConfig(pollID string) ([]byte, error) {
 	p.LastAccess = time.Now()
 	fm.memory[pollID] = p
 	return p.Config, nil
+}
+
+// SavePollCreator sets the poll creator.
+func (fm *FileMemory) SavePollCreator(pollID, name string) error {
+	fm.l.Lock()
+	defer fm.l.Unlock()
+	if !fm.active {
+		return ErrNotActive
+	}
+	err := fm.testload(pollID)
+	if err != nil {
+		return err
+	}
+
+	pollID, err = fm.getInternalID(pollID)
+	if err != nil {
+		return err
+	}
+
+	p := fm.memory[pollID]
+	p.Creator = name
+	p.LastAccess = time.Now()
+	fm.memory[pollID] = p
+	return nil
+}
+
+// GetPollCreator returns the poll creator.
+func (fm *FileMemory) GetPollCreator(pollID string) (string, error) {
+	fm.l.Lock()
+	defer fm.l.Unlock()
+	if !fm.active {
+		return "", ErrNotActive
+	}
+
+	err := fm.testload(pollID)
+	if err != nil {
+		return "", err
+	}
+
+	pollID, err = fm.getInternalID(pollID)
+	if err != nil {
+		return "", err
+	}
+
+	p := fm.memory[pollID]
+	p.LastAccess = time.Now()
+	fm.memory[pollID] = p
+	return p.Creator, nil
+
 }
 
 // MarkPollDeleted marks a poll as deleted. It is not deleted imidiately, but on next garbage collect.
@@ -422,6 +472,7 @@ func (fm *FileMemory) load(ID string) (FileMemoryPollResult, error) {
 	var comments []string
 	var config []byte
 	var deleted bool
+	var creator string
 	err = dec.Decode(&data)
 	if err != nil && err != io.EOF {
 		return FileMemoryPollResult{LastAccess: time.Now()}, err
@@ -442,6 +493,10 @@ func (fm *FileMemory) load(ID string) (FileMemoryPollResult, error) {
 	if err != nil && err != io.EOF {
 		return FileMemoryPollResult{LastAccess: time.Now()}, err
 	}
+	err = dec.Decode(&creator)
+	if err != nil && err != io.EOF {
+		return FileMemoryPollResult{LastAccess: time.Now()}, err
+	}
 	fmpr := FileMemoryPollResult{
 		Data:       data,
 		Names:      names,
@@ -449,6 +504,7 @@ func (fm *FileMemory) load(ID string) (FileMemoryPollResult, error) {
 		Config:     config,
 		LastAccess: time.Now(),
 		Deleted:    deleted,
+		Creator:    creator,
 	}
 	return fmpr, nil
 }
@@ -489,6 +545,10 @@ func (fm *FileMemory) save(ID string) error {
 		return err
 	}
 	err = enc.Encode(&p.Deleted)
+	if err != nil {
+		return err
+	}
+	err = enc.Encode(&p.Creator)
 	if err != nil {
 		return err
 	}

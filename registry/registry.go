@@ -37,6 +37,8 @@ type DataSafe interface {
 	GetPollResult(pollID string) ([][]int, []string, []string, error)
 	SavePollConfig(pollID string, config []byte) error
 	GetPollConfig(pollID string) ([]byte, error)
+	SavePollCreator(pollID, name string) error
+	GetPollCreator(pollID string) (string, error)
 	MarkPollDeleted(pollID string) error
 	RunGC() error
 	LoadConfig(data []byte) error

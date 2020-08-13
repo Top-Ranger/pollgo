@@ -6,9 +6,13 @@ Diese Website ist Datenschutzfreundlich erstellt. Trotzdem müssen für den Betr
 
 Für den sicheren und stabilen Betrieb der Website werden technische Daten sowie Zugriffsdaten (darunter unter Umständen IP-Adresse, Zugriffszeit und Zugriffsziel) gesammelt. Die Verarbeitung dieser Daten erfolgt auf Grund von berechtigten Interessen des Verantwortlichen (DSGVO Art. 6). Diese Daten werden ausschließlich für den technischen Betrieb gesammelt und nicht an Dritte weiter gegeben. Sie werden gelöscht, sobald sie für den Betrieb der Website nicht mehr benötigt werden.
 
-## Umfrage
+## Umfrage erstellen
 
-Sie haben unter Umständen die Möglichkeit, an Umfragen teilzunehmen oder zu erstellen. Sollten Sie an einer Umfrage teilnehmen oder eine erstellen, so werden die Daten gespeichert auf Grundlage ihrer Einwilligung nach DSGVO Art. 6. Die Daten werden nicht zurückverfolgbar gespeichert, sind also anonym. Dies bedeutet, dass sich eine einzelne Umfrage / Antwort nicht mehr auf eine Person zurückverfolgen lässt. Die Umfragen und Antworten werden öffentlich für jeden sichtbar angezeigt.
+Sie haben unter Umständen die Möglichkeit, Umfragen zu erstellen. Sollten Sie eine Umfrage erstellen, so werden die Daten gespeichert auf Grundlage ihrer Einwilligung nach DSGVO Art. 6. Neben der Konfiguration der Umfrage wird auch ihr Benutzernahme gespeichert, den Sie zur Erstellung benutzt haben. Die Umfragen mit Ausnahme des Benutzernamens werden öffentlich für jeden sichtbar angezeigt. Der Benutzername wird nicht mit Dritten geteilt. Sie können die Daten löschen, indem Sie die Umfrage löschen (auf Grund von technischen Einschränkungen kann es sein, dass ihr Benutzername temporär gespeichert bleibt).
+
+## An Umfrage teilnehmen
+
+Sie haben unter Umständen die Möglichkeit, an Umfragen teilzunehmen. Sollten Sie an einer Umfrage teilnehmen, so werden die Daten gespeichert auf Grundlage ihrer Einwilligung nach DSGVO Art. 6. Die Daten werden nicht zurückverfolgbar gespeichert, sind also anonym. Dies bedeutet, dass sich eine einzelne Antwort nicht mehr auf eine Person zurückverfolgen lässt. Die Antworten werden öffentlich für jeden sichtbar angezeigt.
 
 ## Mit Stern markieren
 

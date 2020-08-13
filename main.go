@@ -42,6 +42,7 @@ type ConfigStruct struct {
 	AuthenticationEnabled bool
 	Authenticater         string
 	AuthenticaterConfig   string
+	OnlyCreatorCanDelete  bool
 	DataSafe              string
 	DataSafeConfig        string
 	RunGCOnStart          bool
@@ -70,6 +71,10 @@ func loadConfig(path string) (ConfigStruct, error) {
 		c.ServerPath = strings.Join([]string{"/", c.ServerPath}, "")
 	}
 	c.ServerPath = strings.TrimSuffix(c.ServerPath, "/")
+
+	if !c.AuthenticationEnabled && c.OnlyCreatorCanDelete {
+		log.Println("load config: Configuration nonsensical - OnlyCreatorCanDelete has no effect when AuthenticationEnabled is false")
+	}
 
 	return c, nil
 }

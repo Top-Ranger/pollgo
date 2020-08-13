@@ -219,6 +219,25 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 					}
 				}
 
+				// Test if user is creator
+				if config.OnlyCreatorCanDelete {
+					user := r.Form.Get("user") // is already authenticated
+					creator, err := safe.GetPollCreator(key)
+					if err != nil {
+						rw.WriteHeader(http.StatusInternalServerError)
+						t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
+						textTemplate.Execute(rw, t)
+						return
+					}
+					if creator != "" && user != creator { // Also allow if creator is not set (e.g. old poll or poll created without authentification)
+						tr := GetDefaultTranslation()
+						rw.WriteHeader(http.StatusForbidden)
+						t := textTemplateStruct{template.HTML(template.HTMLEscapeString(fmt.Sprintf("403 Forbidden (%s)", tr.UserNotCreator))), tr, config.ServerPath}
+						textTemplate.Execute(rw, t)
+						return
+					}
+				}
+
 				p.Deleted = true
 				b, err := p.ExportPoll()
 				if err != nil {
@@ -235,6 +254,13 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 					return
 				}
 				err = safe.MarkPollDeleted(key)
+				if err != nil {
+					rw.WriteHeader(http.StatusInternalServerError)
+					t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
+					textTemplate.Execute(rw, t)
+					return
+				}
+				err = safe.SavePollCreator(key, "") // We don't need the creator any longer
 				if err != nil {
 					rw.WriteHeader(http.StatusInternalServerError)
 					t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
@@ -591,6 +617,17 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
 			textTemplate.Execute(rw, t)
 			return
+		}
+		creator := ""
+		if config.AuthenticationEnabled {
+			creator = r.Form.Get("user") // is already authenticated
+			err := safe.SavePollCreator(key, creator)
+			if err != nil {
+				rw.WriteHeader(http.StatusInternalServerError)
+				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
+				textTemplate.Execute(rw, t)
+				return
+			}
 		}
 		http.Redirect(rw, r, fmt.Sprintf("/%s", key), http.StatusSeeOther)
 		return
