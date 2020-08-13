@@ -102,6 +102,9 @@ func (l *LDAPUserMode) Authenticate(user, password string) (bool, error) {
 
 	err = conn.Bind(fmt.Sprintf(l.BindUserPattern, user), password)
 	if err != nil {
+		if ldap.IsErrorWithCode(err, ldap.LDAPResultInvalidCredentials) { // This is an
+			return false, nil
+		}
 		return false, err
 	}
 
@@ -120,7 +123,11 @@ func (l *LDAPUserMode) Authenticate(user, password string) (bool, error) {
 	}
 
 	if len(searchResults.Entries) != 1 {
-		return false, nil
+		if len(searchResults.Entries) == 0 {
+			// nothing found, that's ok
+			return false, nil
+		}
+		return false, fmt.Errorf("LDAP: Wrong number of entries (%d)", len(searchResults.Entries))
 	}
 
 	dn := searchResults.Entries[0].DN
@@ -128,7 +135,10 @@ func (l *LDAPUserMode) Authenticate(user, password string) (bool, error) {
 	// Bind to user
 	err = conn.Bind(dn, password)
 	if err != nil {
-		return false, nil
+		if ldap.IsErrorWithCode(err, ldap.LDAPResultInvalidCredentials) {
+			return false, nil
+		}
+		return false, err
 	}
 
 	return true, nil
