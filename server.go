@@ -264,7 +264,7 @@ func initialiseServer() error {
 }
 
 func rootHandle(rw http.ResponseWriter, r *http.Request) {
-	if r.URL.Path == rootPath || r.URL.Path == config.ServerPath {
+	if r.URL.Path == rootPath || r.URL.Path == config.ServerPath || r.URL.Path == "/" {
 		tl := GetDefaultTranslation()
 		text := fmt.Sprintf(startpage, template.HTMLEscapeString(tl.Starred), template.HTMLEscapeString(tl.FunctionRequiresJavaScript))
 		t := textTemplateStruct{template.HTML(text), tl, config.ServerPath}
