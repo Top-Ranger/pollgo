@@ -54,5 +54,6 @@
     "Unknown": "unknown",
     "SelectAll": "Select all",
     "FunctionRequiresJavaScript": "This function requires JavaScript enabled to work.",
-    "UserNotCreator": "user is not creator"
+    "UserNotCreator": "user is not creator",
+    "CreateNewPollRandom": "Create poll at random URL"
 }

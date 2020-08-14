@@ -85,6 +85,7 @@ type Translation struct {
 	SelectAll                  string
 	FunctionRequiresJavaScript string
 	UserNotCreator             string
+	CreateNewPollRandom        string
 }
 
 const defaultLanguage = "en"

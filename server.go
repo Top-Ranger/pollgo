@@ -62,11 +62,28 @@ func init() {
 const startpage = `
 <h1>PollGo!</h1>
 
+<script>
+function toRandomPage() {
+  var b = new Uint8Array(33);
+  window.crypto.getRandomValues(b);
+  var target = window.location.href;
+  if(target.slice(-1) != "/") {
+    target = target + "/";
+  }
+  target = target + btoa(String.fromCharCode.apply(null, b));
+  window.location.href = target;
+}
+</script>
+
 <div class="even">
 <h2>%s:</h2>
 <noscript>%s</noscript>
 <ul class="starlist" id="starlist">
 </ul>
+</div>
+
+<div>
+<button onclick="toRandomPage()">%s</button>
 </div>
 
 <script>
@@ -266,7 +283,7 @@ func initialiseServer() error {
 func rootHandle(rw http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == rootPath || r.URL.Path == config.ServerPath || r.URL.Path == "/" {
 		tl := GetDefaultTranslation()
-		text := fmt.Sprintf(startpage, template.HTMLEscapeString(tl.Starred), template.HTMLEscapeString(tl.FunctionRequiresJavaScript))
+		text := fmt.Sprintf(startpage, template.HTMLEscapeString(tl.Starred), template.HTMLEscapeString(tl.FunctionRequiresJavaScript), template.HTMLEscapeString(tl.CreateNewPollRandom))
 		t := textTemplateStruct{template.HTML(text), tl, config.ServerPath}
 		textTemplate.Execute(rw, t)
 		return
