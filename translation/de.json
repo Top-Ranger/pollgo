@@ -55,5 +55,5 @@
     "SelectAll": "Alle auswählen",
     "FunctionRequiresJavaScript": "Diese Funktion benötigt JavaScript.",
     "UserNotCreator": "Benutzer ist nicht Ersteller",
-    "CreateRandomPoll": "Zufällige Umfrage erstellen (zufällige URL)"
+    "CreateNewPollRandom": "Zufällige Umfrage erstellen (zufällige URL)"
 }
