@@ -55,9 +55,10 @@ const FileMemoryName = "FileMemory"
 
 // FileMemory holds a number of polls in memory and saves all other to disk.
 type FileMemory struct {
-	ClearInterval int
-	MaximumMemory int
-	Path          string
+	ClearInterval    int
+	MaximumMemory    int
+	DiscSyncInterval int
+	Path             string
 
 	memory              map[string]FileMemoryPollResult
 	active              bool
@@ -382,13 +383,19 @@ func (h fileMemoryHelperArray) Swap(i, j int) {
 
 func (fm *FileMemory) worker() {
 	fm.l.Lock()
-	duration := time.Duration(fm.ClearInterval) * time.Minute
+	durationClear := time.Duration(fm.ClearInterval) * time.Minute
+	durationSync := time.Duration(fm.DiscSyncInterval) * time.Minute
 	fm.l.Unlock()
-	t := time.NewTicker(duration)
-	defer t.Stop()
+	clear := time.NewTicker(durationClear)
+	defer clear.Stop()
+	var sync time.Ticker
+	if durationSync != 0 {
+		sync = *time.NewTicker(durationSync)
+		defer sync.Stop()
+	}
 	for {
 		select {
-		case <-t.C:
+		case <-clear.C:
 			func() {
 				fm.l.Lock()
 				defer fm.l.Unlock()
@@ -414,6 +421,16 @@ func (fm *FileMemory) worker() {
 					i++
 				}
 				log.Printf("filememory: freed %d resources from memory", i)
+			}()
+		case <-sync.C:
+			func() {
+				fm.l.Lock()
+				defer fm.l.Unlock()
+
+				for k := range fm.memory {
+					fm.save(k)
+				}
+				log.Printf("filememory: synced %d resources to disc", len(fm.memory))
 			}()
 		case <-fm.flushandclose:
 			func() {
