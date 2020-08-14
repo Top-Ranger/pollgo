@@ -18,9 +18,13 @@
 package authenticater
 
 import (
+	"context"
 	"crypto/tls"
 	"encoding/json"
 	"fmt"
+	"time"
+
+	"golang.org/x/time/rate"
 
 	"github.com/Top-Ranger/pollgo/registry"
 	"github.com/go-ldap/ldap/v3"
@@ -45,8 +49,12 @@ type LDAPUserMode struct {
 	// Pattern for the initial bind. Must contain a single %s which is replaced by the username.
 	BindUserPattern string
 
-	// Time limit for the LDAP search
+	// Time limit for the LDAP search.
 	TimeLimit int
+
+	// Number of requests allowed per second.
+	// Value 0 represents no rate limit.
+	RateLimit int
 
 	// Search base dn used for searching user DN.
 	BaseDN string
@@ -58,6 +66,8 @@ type LDAPUserMode struct {
 	// Only set this to true if you absolutely must and have a secure connection, otherwise user data (including passwords) might be leaked!
 	// If you are unsure, set it to false.
 	InsecureSkipCertificateVerify bool
+
+	limit rate.Limiter
 }
 
 // LoadConfig loads the LDAP configuration as a JSON.
@@ -81,11 +91,26 @@ func (l *LDAPUserMode) LoadConfig(b []byte) error {
 		}
 	}
 
+	if l.RateLimit == 0 {
+		l.limit.SetLimit(rate.Inf)
+	} else {
+		l.limit.SetLimit(rate.Limit(l.RateLimit))
+		l.limit.SetBurst(l.RateLimit)
+	}
+
 	return nil
 }
 
 // Authenticate verifies a user / password combination by binding it to the LDAP server.
 func (l *LDAPUserMode) Authenticate(user, password string) (bool, error) {
+	// Rate limit
+	ctx, cancel := context.WithTimeout(context.Background(), time.Duration(l.TimeLimit)*time.Second)
+	defer cancel()
+	err := l.limit.Wait(ctx)
+	if err != nil {
+		return false, err
+	}
+
 	// Connect
 	conn, err := ldap.DialURL(l.Endpoint, ldap.DialWithTLSConfig(&tls.Config{InsecureSkipVerify: l.InsecureSkipCertificateVerify}))
 	if err != nil {
@@ -112,7 +137,7 @@ func (l *LDAPUserMode) Authenticate(user, password string) (bool, error) {
 	searchRequest := ldap.NewSearchRequest(
 		l.BaseDN,
 		ldap.ScopeWholeSubtree, ldap.NeverDerefAliases, 0, l.TimeLimit, false,
-		fmt.Sprintf(l.LDAPUserFilter, user),
+		fmt.Sprintf(l.LDAPUserFilter, ldap.EscapeFilter(user)),
 		[]string{"dn"},
 		nil,
 	)
