@@ -75,15 +75,15 @@ function toRandomPage() {
 }
 </script>
 
+<div>
+<button onclick="toRandomPage()">%s</button>
+</div>
+
 <div class="even">
 <h2>%s:</h2>
 <noscript>%s</noscript>
 <ul class="starlist" id="starlist">
 </ul>
-</div>
-
-<div>
-<button onclick="toRandomPage()">%s</button>
 </div>
 
 <script>
@@ -283,7 +283,7 @@ func initialiseServer() error {
 func rootHandle(rw http.ResponseWriter, r *http.Request) {
 	if r.URL.Path == rootPath || r.URL.Path == config.ServerPath || r.URL.Path == "/" {
 		tl := GetDefaultTranslation()
-		text := fmt.Sprintf(startpage, template.HTMLEscapeString(tl.Starred), template.HTMLEscapeString(tl.FunctionRequiresJavaScript), template.HTMLEscapeString(tl.CreateNewPollRandom))
+		text := fmt.Sprintf(startpage, template.HTMLEscapeString(tl.CreateNewPollRandom), template.HTMLEscapeString(tl.Starred), template.HTMLEscapeString(tl.FunctionRequiresJavaScript))
 		t := textTemplateStruct{template.HTML(text), tl, config.ServerPath}
 		textTemplate.Execute(rw, t)
 		return
