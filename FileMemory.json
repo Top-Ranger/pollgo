@@ -1,6 +1,7 @@
 {
-	"ClearInterval": 60,
+	"ClearInterval": 5,
+	"ClearAfterRatio": 0.75,
 	"MaximumMemory": 100,
-	"DiscSyncInterval": 360,
+	"DiscSyncInterval": 60,
 	"Path":          "./data"
 }

@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"os"
 	"path/filepath"
 	"sort"
@@ -56,6 +57,7 @@ const FileMemoryName = "FileMemory"
 // FileMemory holds a number of polls in memory and saves all other to disk.
 type FileMemory struct {
 	ClearInterval    int
+	ClearAfterRatio  float64
 	MaximumMemory    int
 	DiscSyncInterval int
 	Path             string
@@ -329,6 +331,14 @@ func (fm *FileMemory) LoadConfig(data []byte) error {
 		return errors.New("filememory: ClearInterval must be positive")
 	}
 
+	if fm.ClearAfterRatio < 0.0 || fm.ClearAfterRatio > 1.0 {
+		return errors.New("filememory: ClearAfterRatio must be between 0.0 and 1.0")
+	}
+
+	if fm.ClearAfterRatio < 0.5 {
+		log.Printf("filememory: ClearAfterRatio is low - most polls will be removed on cleanup")
+	}
+
 	err = os.MkdirAll(filepath.Join(fm.Path), os.ModePerm)
 	if err != nil {
 		return err
@@ -412,7 +422,9 @@ func (fm *FileMemory) worker() {
 
 				i := 0
 
-				for len(fm.memory) > fm.MaximumMemory {
+				target := int(math.Ceil(float64(fm.MaximumMemory) * fm.ClearAfterRatio))
+
+				for len(fm.memory) > target {
 					err := fm.save(helper[i].id)
 					if err != nil {
 						log.Printf("filememory: error saving %s: %s", helper[i].id, err.Error())
