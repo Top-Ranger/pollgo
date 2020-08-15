@@ -75,9 +75,11 @@ function toRandomPage() {
 }
 </script>
 
-<div>
+<div id="__randompoll" hidden>
 <button onclick="toRandomPage()">%s</button>
 </div>
+
+<script>var e = document.getElementById("__randompoll"); e.removeAttribute("hidden");</script>
 
 <div class="even">
 <h2>%s:</h2>
