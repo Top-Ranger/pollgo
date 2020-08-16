@@ -56,11 +56,24 @@ const FileMemoryName = "FileMemory"
 
 // FileMemory holds a number of polls in memory and saves all other to disk.
 type FileMemory struct {
-	ClearInterval    int
-	ClearAfterRatio  float64
-	MaximumMemory    int
+	// Interval in minutes when a cleanup operation is started.
+	// A cleanup operation will reduce memory if MaximumMemory is exceeded by saving polls to disk.
+	ClearInterval int
+
+	// Ratio of 'free' memory versus used memory.
+	// Example: if set to 0.75 and Maximum memory is set to 100, then 75 polls will be kept in memory after cleanup.
+	ClearAfterRatio float64
+
+	// Number of polls needed in memory before cleanup is performed.
+	MaximumMemory int
+
+	// Interval in minutes in which all polls in memory will be synced to disk.
+	// This is used to reduce damage if something goes horribly wrong.
+	// Setting this to 0 disables syncing to disk.
 	DiscSyncInterval int
-	Path             string
+
+	//  Path where polls are saved to disk.
+	Path string
 
 	memory              map[string]FileMemoryPollResult
 	active              bool
@@ -329,6 +342,9 @@ func (fm *FileMemory) LoadConfig(data []byte) error {
 	}
 	if fm.ClearInterval <= 0 {
 		return errors.New("filememory: ClearInterval must be positive")
+	}
+	if fm.DiscSyncInterval < 0 {
+		return errors.New("filememory: ClearInterval must be positive or zero")
 	}
 
 	if fm.ClearAfterRatio < 0.0 || fm.ClearAfterRatio > 1.0 {
