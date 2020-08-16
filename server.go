@@ -70,7 +70,9 @@ function toRandomPage() {
   if(target.slice(-1) != "/") {
     target = target + "/";
   }
-  target = target + btoa(String.fromCharCode.apply(null, b));
+  var id = btoa(String.fromCharCode.apply(null, b));
+  id = id.replace(new RegExp("/", "g"), "-")
+  target = target + id
   window.location.href = target;
 }
 </script>
