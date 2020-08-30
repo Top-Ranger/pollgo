@@ -212,6 +212,9 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 						return
 					}
 					if !correct {
+						if config.LogFailedLogin {
+							log.Printf("Failed authentication from %s", r.RemoteAddr)
+						}
 						rw.WriteHeader(http.StatusForbidden)
 						t := textTemplateStruct{"403 Forbidden", GetDefaultTranslation(), config.ServerPath}
 						textTemplate.Execute(rw, t)
@@ -351,6 +354,9 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				return
 			}
 			if !correct {
+				if config.LogFailedLogin {
+					log.Printf("Failed authentication from %s", r.RemoteAddr)
+				}
 				rw.WriteHeader(http.StatusForbidden)
 				t := textTemplateStruct{"403 Forbidden", GetDefaultTranslation(), config.ServerPath}
 				textTemplate.Execute(rw, t)

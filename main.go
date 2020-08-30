@@ -42,6 +42,7 @@ type ConfigStruct struct {
 	AuthenticationEnabled bool
 	Authenticater         string
 	AuthenticaterConfig   string
+	LogFailedLogin        bool
 	OnlyCreatorCanDelete  bool
 	DataSafe              string
 	DataSafeConfig        string
