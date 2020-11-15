@@ -136,7 +136,9 @@ func main() {
 	}
 
 	if config.RunGCOnStart {
+		log.Println("main: starting gc")
 		safe.RunGC()
+		log.Println("main: gc finished")
 	}
 
 	RunServer()

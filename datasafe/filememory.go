@@ -304,6 +304,8 @@ func (fm *FileMemory) RunGC() error {
 		return err
 	}
 
+	deleted := 0
+
 	for f := range files {
 		if files[f].IsDir() || !files[f].Mode().IsRegular() {
 			continue
@@ -320,8 +322,12 @@ func (fm *FileMemory) RunGC() error {
 			if err != nil {
 				return err
 			}
+			deleted++
 		}
 	}
+
+	log.Printf("filememory: gc removed %d resources from disc", deleted)
+
 	return nil
 }
 
