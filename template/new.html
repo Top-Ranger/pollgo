@@ -8,6 +8,7 @@
   <meta name="author" content="Marcus Soll"/>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="author" href="https://msoll.eu/">
+  <script src="{{.ServerPath}}/js/pollgo.1.js"></script>
   <link rel="stylesheet" href="{{.ServerPath}}/css/pollgo.css">
   <link rel="icon" type="image/vnd.microsoft.icon" href="{{.ServerPath}}/static/favicon.ico">
 </head>
@@ -21,11 +22,10 @@
 
   <script>
   try {
-    var a = JSON.parse(localStorage.getItem("pollgo_star"));
-    var i = a.indexOf("{{.Key}}");
-    if(i != -1) {
-      a.splice(i, 1)
-      localStorage.setItem("pollgo_star", JSON.stringify(a));
+    let a = getPolls();
+	  if (a["{{.}}"]) {
+		  delete a["{{.}}"];
+  		savePolls(a);
     }
   } catch (e) {
   }
@@ -51,19 +51,19 @@
 
     function addOption() {
       normalanswer++
-      var target = document.getElementById("normal_answers");
-      var l = document.createElement("LABEL");
+      let target = document.getElementById("normal_answers");
+      let l = document.createElement("LABEL");
       l.setAttribute("for", "normalanswer"+normalanswer);
       l.innerText = "{{.Translation.Question}}" + ": ";
       
-      var i = document.createElement("INPUT");
+      let i = document.createElement("INPUT");
       i.setAttribute("type", "text");
       i.setAttribute("id", "normalanswer"+normalanswer);
       i.setAttribute("name", "normalanswer"+normalanswer);
       i.setAttribute("placeholder", "{{.Translation.Question}}")
       i.setAttribute("maxlength", 500);
 
-      var b = document.createElement("BR");
+      let b = document.createElement("BR");
 
       target.appendChild(l);
       target.appendChild(i);
@@ -74,32 +74,32 @@
 
     function addAnswer() {
       normalansweroption++
-      var target = document.getElementById("normal_answer_options");
-      var l = document.createElement("LABEL");
+      let target = document.getElementById("normal_answer_options");
+      let l = document.createElement("LABEL");
       l.setAttribute("for", "normalanswer"+normalansweroption);
       l.innerText = "{{.Translation.AnswerOption}}" + ": ";
       
-      var i = document.createElement("INPUT");
+      let i = document.createElement("INPUT");
       i.setAttribute("type", "text");
       i.setAttribute("id", "normalansweroption"+normalansweroption);
       i.setAttribute("name", "normalansweroption"+normalansweroption);
       i.setAttribute("placeholder", "{{.Translation.AnswerOption}}")
       i.setAttribute("maxlength", 500);
 
-      var n = document.createElement("INPUT");
+      let n = document.createElement("INPUT");
       n.setAttribute("type", "number");
       n.setAttribute("id", "normalanswervalue"+normalansweroption);
       n.setAttribute("name", "normalanswervalue"+normalansweroption);
       n.setAttribute("placeholder", "{{.Translation.Value}}")
       n.setAttribute("step", "0.01")
 
-      var c = document.createElement("INPUT");
+      let c = document.createElement("INPUT");
       c.setAttribute("type", "color");
       c.setAttribute("id", "normalanswercolour"+normalansweroption);
       c.setAttribute("name", "normalanswercolour"+normalansweroption);
       c.setAttribute("placeholder", "{{.Translation.Colour}}")
 
-      var b = document.createElement("BR");
+      ket b = document.createElement("BR");
 
       target.appendChild(l);
       target.appendChild(i);
@@ -145,17 +145,17 @@
 
     function addTime() {
       timeanswer++
-      var target = document.getElementById("date_times");
-      var l = document.createElement("LABEL");
+      let target = document.getElementById("date_times");
+      let l = document.createElement("LABEL");
       l.setAttribute("for", "time"+timeanswer);
       l.innerText = "{{.Translation.Time}}" + ": ";
       
-      var i = document.createElement("INPUT");
+      let i = document.createElement("INPUT");
       i.setAttribute("type", "time");
       i.setAttribute("id", "time"+timeanswer);
       i.setAttribute("name", "time"+timeanswer);
 
-      var b = document.createElement("BR");
+      let b = document.createElement("BR");
 
       target.appendChild(l);
       target.appendChild(i);

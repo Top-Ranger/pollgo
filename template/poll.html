@@ -9,6 +9,7 @@
   <meta name="author" content="Marcus Soll"/>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="author" href="https://msoll.eu/">
+  <script src="{{.ServerPath}}/js/pollgo.1.js"></script>
   <link rel="stylesheet" href="{{.ServerPath}}/css/pollgo.css">
   <link rel="icon" type="image/vnd.microsoft.icon" href="{{.ServerPath}}/static/favicon.ico">
 </head>
@@ -20,19 +21,22 @@
     </div>
   </header>
 
-  <h1>{{.Key}} <span id="pollgo_star"></span></h1>
-
+  <h1>{{.Key}} <span id="pollgo_star"></span> <span id="pollgo_star_name" style="text-decoration: underline; background-color: palegreen; display: inline-block; min-width: 100px; vertical-align: bottom; visibility: hidden;" type="text" autocomplete="off" oninput="updateDisplay(this.innerText)" contenteditable="true"></span></h1>
   <script>
     function createStar() {
-      var s = document.createElement("SPAN");
+      let s = document.createElement("SPAN");
       s.textContent = "★";
       s.setAttribute("style", "cursor: pointer;")
+      document.getElementById("pollgo_star_name").style.visibility="visible";
+      let a = getPolls();
+      if (a["{{.Key}}"] && a["{{.Key}}"].Display) {
+        document.getElementById("pollgo_star_name").innerText = a["{{.Key}}"].Display
+      }
       s.onclick = function() {
-        var a = JSON.parse(localStorage.getItem("pollgo_star"));
-        var i = a.indexOf("{{.Key}}")
-        a.splice(i, 1)
-        localStorage.setItem("pollgo_star", JSON.stringify(a));
-        var target = document.getElementById("pollgo_star");
+        let a = getPolls();
+        delete a["{{.Key}}"];
+        savePolls(a);
+        let target = document.getElementById("pollgo_star");
         target.textContent = "";
         target.appendChild(createNoStar());
       };
@@ -40,39 +44,58 @@
     }
 
     function createNoStar() {
-      var s = document.createElement("SPAN");
+      let s = document.createElement("SPAN");
       s.textContent = "☆";
       s.setAttribute("style", "cursor: pointer;")
+      document.getElementById("pollgo_star_name").style.visibility="hidden";
+      document.getElementById("pollgo_star_name").innerText = "";
       s.onclick = function() {
-        var a = JSON.parse(localStorage.getItem("pollgo_star"));
-        if(a === null) {
-          a = [];
-        }
-        a.push("{{.Key}}");
-        localStorage.setItem("pollgo_star", JSON.stringify(a));
-        var target = document.getElementById("pollgo_star");
+        let a = getPolls();
+        a["{{.Key}}"] = newPollObject();
+        savePolls(a);
+        let target = document.getElementById("pollgo_star");
         target.textContent = "";
         target.appendChild(createStar());
       };
       return s;
     }
 
-    var found = false;
+    let found = false;
     try {
-      var a = JSON.parse(localStorage.getItem("pollgo_star"));
-      found = a.indexOf("{{.Key}}") != -1;
+      let a = getPolls();
+    	if (a["{{.Key}}"]) {
+        found = true;
+      }
     } catch (e) {
       found = false;
     }
-    var s;
+    let s;
     if (found) {
       s = createStar();
     } else {
       s = createNoStar();
     }
-    var target = document.getElementById("pollgo_star");
+    let target = document.getElementById("pollgo_star");
     target.textContent = "";
     target.appendChild(s);
+
+    var timeout = null;
+
+    function updateDisplay(display) {
+      if (timeout != null) {
+        window.clearTimeout(timeout);
+        timeout = null;
+      }
+      timeout = window.setTimeout(function() {
+        let a = getPolls();
+    	  if (a["{{.Key}}"]) {
+          a["{{.Key}}"].Display = display;
+          savePolls(a);
+        } else {
+          return
+        }
+      }, 1000);
+    }
   </script>
 
   {{if .Description}}
@@ -153,8 +176,8 @@
   </div>
 
   <script>
-    var abbrs = document.querySelectorAll('abbr[title]');
-    for(var i = 0; i < abbrs.length; i++) {
+    let abbrs = document.querySelectorAll('abbr[title]');
+    for(let i = 0; i < abbrs.length; i++) {
       abbrs[i].addEventListener('click', function(event){alert("" + event.currentTarget.innerText + "\n\n" + event.currentTarget.title)})
       console.log("added 'click' to abbr")
     }

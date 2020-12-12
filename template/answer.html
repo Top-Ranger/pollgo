@@ -9,6 +9,7 @@
   <meta name="author" content="Marcus Soll"/>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="author" href="https://msoll.eu/">
+  <script src="{{.ServerPath}}/js/pollgo.1.js"></script>
   <link rel="stylesheet" href="{{.ServerPath}}/css/pollgo.css">
   <link rel="icon" type="image/vnd.microsoft.icon" href="{{.ServerPath}}/static/favicon.ico">
 </head>
@@ -43,7 +44,7 @@
         <tr>
         <td></td>
         {{range $i, $e := .AnswerOption}}
-        <td class="centre" bgcolor="{{index $e 2}}"><button form="detach from form" onclick="e=document.getElementById('_tbody');l=e.getElementsByTagName('input');for(var i=0;i<l.length;i++){if(l[i].type==='radio'&&l[i].value==='{{$i}}'){l[i].checked=true}}">{{$.Translation.SelectAll}}</button></td>
+        <td class="centre" bgcolor="{{index $e 2}}"><button form="detach from form" onclick="e=document.getElementById('_tbody');l=e.getElementsByTagName('input');for(let i=0;i<l.length;i++){if(l[i].type==='radio'&&l[i].value==='{{$i}}'){l[i].checked=true}}">{{$.Translation.SelectAll}}</button></td>
         {{end}}
         </tr>
         <tbody id="_tbody">
@@ -77,8 +78,8 @@
   <script>
     document.getElementById("submit_answer").disabled = !document.getElementById("dsgvo_answer").checked
 
-    var abbrs = document.querySelectorAll('abbr[title]');
-    for(var i = 0; i < abbrs.length; i++) {
+    let abbrs = document.querySelectorAll('abbr[title]');
+    for(let i = 0; i < abbrs.length; i++) {
       abbrs[i].addEventListener('click', function(event){alert("" + event.currentTarget.innerText + "\n\n" + event.currentTarget.title)})
       console.log("added 'click' to abbr")
     }

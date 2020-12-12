@@ -92,18 +92,33 @@ function toRandomPage() {
 
 <script>
 try {
-  var a = JSON.parse(localStorage.getItem("pollgo_star"));
-  a.sort();
-  var t = document.getElementById("starlist");
-  for(var i = 0; i < a.length; i++) {
-	var link = document.createElement("A");
-	link.href = "/" + a[i];
-	link.textContent = a[i];
-	var li = document.createElement("LI");
+  let a = getPolls();
+  let t = document.getElementById("starlist");
+  let keys = Object.keys(a);
+  let c = new Intl.Collator();
+  keys.sort(function(k, l){
+	if(a[k].Display) {
+		k = a[k].Display;
+	}
+	if(a[l].Display) {
+		l = a[l].Display;
+	}
+	return c.compare(k, l);
+  });
+  for(let i = 0; i < keys.length; i++) {
+	let link = document.createElement("A");
+	link.href = "/" + keys[i];
+	if(a[keys[i]].Display) {
+		link.textContent = a[keys[i]].Display;
+	} else {
+		link.textContent = keys[i];
+	}
+	let li = document.createElement("LI");
 	li.appendChild(link);
 	t.appendChild(li);
   }
 } catch (e) {
+	console.log(e)
 }
 </script>
 `
@@ -151,7 +166,7 @@ func initialiseServer() error {
 	})
 
 	// static files
-	for _, d := range []string{"static/", "font/"} {
+	for _, d := range []string{"static/", "font/", "js/"} {
 		filepath.Walk(d, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				log.Panicln("server: Error wile caching files:", err)

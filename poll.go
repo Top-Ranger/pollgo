@@ -82,12 +82,11 @@ var newTemplate *template.Template
 var deleteTemplate = template.Must(template.New("poll").Parse(`
 <script>
 try {
-	var a = JSON.parse(localStorage.getItem("pollgo_star"));
-	var i = a.indexOf("{{.}}");
-	if(i != -1) {
-		a.splice(i, 1)
-		localStorage.setItem("pollgo_star", JSON.stringify(a));
-	}
+	var a = getPolls();
+	if (a["{{.}}"]) {
+		delete a["{{.}}"];
+		savePolls(a);
+    }
 } catch (e) {
 }
 </script>
