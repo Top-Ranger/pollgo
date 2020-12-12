@@ -21,6 +21,11 @@ function getPolls() {
     try {
         let a = JSON.parse(localStorage.getItem("pollgo_star"));
         //let version = localStorage.getItem("pollgo_star_version"); // Version not used yet.
+
+        if (a == null) {
+            return {};
+        }
+
         if (Array.isArray(a)) {
             // Old format, we need to convert it
             let newA = {};
