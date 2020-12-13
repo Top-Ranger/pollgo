@@ -21,7 +21,7 @@
     </div>
   </header>
 
-  <h1>{{.Key}} <span id="pollgo_star"></span> <span id="pollgo_star_name" style="text-decoration: underline; background-color: palegreen; display: inline-block; min-width: 100px; vertical-align: bottom; visibility: hidden;" type="text" autocomplete="off" oninput="updateDisplay(this.innerText)" contenteditable="true"></span></h1>
+  <h1>{{.Key}} <span id="pollgo_star"></span> <span id="pollgo_star_name" style="text-decoration: underline; background-color: var(--primary-colour-light); display: inline-block; min-width: 100px; vertical-align: bottom; visibility: hidden; border: 1px dashed var(--primary-colour);" type="text" autocomplete="off" oninput="updateDisplay(this.innerText)" contenteditable="true"></span></h1>
   <script>
     function createStar() {
       let s = document.createElement("SPAN");
