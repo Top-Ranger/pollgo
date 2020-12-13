@@ -32,13 +32,20 @@
       if (a["{{.Key}}"] && a["{{.Key}}"].Display) {
         document.getElementById("pollgo_star_name").innerText = a["{{.Key}}"].Display
       }
-      s.onclick = function() {
+      s.tabIndex = 0;
+      let event = function() {
         let a = getPolls();
         delete a["{{.Key}}"];
         savePolls(a);
         let target = document.getElementById("pollgo_star");
         target.textContent = "";
         target.appendChild(createNoStar());
+      };
+      s.onclick = event;
+      s.onkeydown = function(e) {
+        if(e.key == "Enter" || e.key == " ") {
+          event();
+        }
       };
       return s;
     }
@@ -49,13 +56,20 @@
       s.setAttribute("style", "cursor: pointer;")
       document.getElementById("pollgo_star_name").style.visibility="hidden";
       document.getElementById("pollgo_star_name").innerText = "";
-      s.onclick = function() {
+      s.tabIndex = 0;
+      let event = function() {
         let a = getPolls();
         a["{{.Key}}"] = newPollObject();
         savePolls(a);
         let target = document.getElementById("pollgo_star");
         target.textContent = "";
         target.appendChild(createStar());
+      };
+      s.onclick = event;
+      s.onkeydown = function(e) {
+        if(e.key == "Enter" || e.key == " ") {
+          event();
+        }
       };
       return s;
     }
