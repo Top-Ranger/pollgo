@@ -110,6 +110,15 @@
         }
       }, 1000);
     }
+
+    function consumeEnter(e) {
+      if (e.key == "Enter") {
+        e.preventDefault();
+        return false;
+      }
+    }
+
+    document.getElementById("pollgo_star_name").addEventListener("keypress", consumeEnter)
   </script>
 
   {{if .Description}}
