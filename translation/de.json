@@ -55,5 +55,13 @@
     "SelectAll": "Alle auswählen",
     "FunctionRequiresJavaScript": "Diese Funktion benötigt JavaScript.",
     "UserNotCreator": "Benutzer ist nicht Ersteller",
-    "CreateNewPollRandom": "Umfrage erstellen (zufällige URL)"
+    "CreateNewPollRandom": "Umfrage erstellen (zufällige URL)",
+    "OpinionPoll": "Meinungsumfrage",
+    "OpinionItem": "Item",
+    "AddOpinionItem": "Item hinzufügen",
+    "OpinionGood": "Gut",
+    "OpinionRatherGood": "Eher Gut",
+    "OpinionNeutral": "Neutral",
+    "OpinionRatherBad": "Eher Schlecht",
+    "OpinionBad": "Schlecht"
 }

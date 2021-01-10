@@ -35,9 +35,10 @@
 
   <div class="even">
     <p>{{.Translation.SelectPollKind}}:</p>
-    <p><input type="radio" id="select_normal" name="select" value="normal" onchange="if(this.checked){document.getElementById('normal_poll').removeAttribute('hidden');document.getElementById('date_poll').hidden=true;document.getElementById('config_poll').hidden=true;}"><label for="select_normal">{{.Translation.NormalPoll}}</label></p>
-    <p><input type="radio" id="select_date" name="select" value="date" onchange="if(this.checked){document.getElementById('date_poll').removeAttribute('hidden');document.getElementById('normal_poll').hidden=true;document.getElementById('config_poll').hidden=true;}"><label for="select_date">{{.Translation.AppointmentPoll}}</label></p>
-    <p><input type="radio" id="select_config" name="select" value="config" onchange="if(this.checked){document.getElementById('config_poll').removeAttribute('hidden');document.getElementById('normal_poll').hidden=true;document.getElementById('date_poll').hidden=true;}"><label for="select_config">{{.Translation.LoadConfiguration}}</label></p>
+    <p><input type="radio" id="select_normal" name="select" value="normal" onchange="if(this.checked){document.getElementById('normal_poll').removeAttribute('hidden');document.getElementById('date_poll').hidden=true;document.getElementById('config_poll').hidden=true;document.getElementById('opinion_poll').hidden=true;}"><label for="select_normal">{{.Translation.NormalPoll}}</label></p>
+    <p><input type="radio" id="select_date" name="select" value="date" onchange="if(this.checked){document.getElementById('date_poll').removeAttribute('hidden');document.getElementById('normal_poll').hidden=true;document.getElementById('config_poll').hidden=true;document.getElementById('opinion_poll').hidden=true;}"><label for="select_date">{{.Translation.AppointmentPoll}}</label></p>
+    <p><input type="radio" id="select_opinion" name="select" value="opinion" onchange="if(this.checked){document.getElementById('opinion_poll').removeAttribute('hidden');document.getElementById('normal_poll').hidden=true;document.getElementById('date_poll').hidden=true;document.getElementById('config_poll').hidden=true;}"><label for="select_opinion">{{.Translation.OpinionPoll}}</label></p>
+    <p><input type="radio" id="select_config" name="select" value="config" onchange="if(this.checked){document.getElementById('config_poll').removeAttribute('hidden');document.getElementById('normal_poll').hidden=true;document.getElementById('date_poll').hidden=true;document.getElementById('opinion_poll').hidden=true;}"><label for="select_config">{{.Translation.LoadConfiguration}}</label></p>
   </div>
 
   <script>
@@ -196,6 +197,58 @@
       {{end}}
       <input type="checkbox" id="dsgvo_date" name="dsgvo" onclick="document.getElementById('date_submit').disabled = !this.checked" required><label for=dsgvo_date>{{.Translation.AcceptPrivacyPolicy}}</label> <br>
       <p><input type="submit" id="date_submit" value="{{$.Translation.CreatePoll}}" disabled></p>
+    </form>
+  </div>
+
+  <script>
+  var opinionitem = 2
+
+  function addOpinionItem() {
+    opinionitem++
+    let target = document.getElementById("opinion_items");
+    let l = document.createElement("LABEL");
+    l.setAttribute("for", "opinionitem"+opinionitem);
+    l.innerText = "{{.Translation.OpinionItem}}" + ": ";
+    
+    let i = document.createElement("INPUT");
+    i.setAttribute("type", "text");
+    i.setAttribute("id", "opinionitem"+opinionitem);
+    i.setAttribute("name", "opinionitem"+opinionitem);
+    i.setAttribute("placeholder", "{{.Translation.OpinionItem}}")
+    i.setAttribute("maxlength", 500);
+
+    let b = document.createElement("BR");
+
+    target.appendChild(l);
+    target.appendChild(i);
+    target.appendChild(b);
+  }
+  </script>
+
+  <div class="odd" id="opinion_poll" hidden>
+    <p>{{.Translation.OpinionPoll}}</p>
+    <form id="new_opinion" method="POST">
+      <input type="hidden" name="type" value="opinion">
+      <textarea id="textarea_opinion" name="description" rows="5" form="new_opinion" placeholder="{{.Translation.Description}}" maxlength="100000"></textarea> <br> <hr>
+      <div id="opinion_items">
+        <label for="opinionitem1">{{.Translation.OpinionItem}}: </label><input type="text" id="opinionitem1" name="opinionitem1" maxlength="500" placeholder="{{.Translation.OpinionItem}}"> <br>
+        <label for="opinionitem2">{{.Translation.OpinionItem}}: </label><input type="text" id="opinionitem2" name="opinionitem2" maxlength="500" placeholder="{{.Translation.OpinionItem}}"> <br>
+      </div>
+      <p><button form="no_form" onclick="addOpinionItem();">{{.Translation.AddOpinionItem}}</button></p> <hr>
+      {{if .HasPassword}}
+      <table style="border: none;">
+        <tr style="border: none; background-color: inherit;">
+          <td style="border: none;"><label for="opinion_user">{{.Translation.Username}}: </label></td>
+          <td style="border: none;"><input type="text" id="opinion_user" name="user" maxlength="500" required></td>
+        </tr>
+        <tr style="border: none; background-color: inherit;">
+         <td style="border: none;"><label for="opinion_pw">{{.Translation.Password}}: </label></td>
+         <td style="border: none;"><input type="password" id="opinion_pw" name="pw" maxlength="500" required></td>
+        </tr>
+      </table>
+      {{end}}
+      <input type="checkbox" id="dsgvo_opinion" name="dsgvo" onclick="document.getElementById('opinion_submit').disabled = !this.checked" required><label for=dsgvo_opinion>{{.Translation.AcceptPrivacyPolicy}}</label> <br>
+      <p><input type="submit" id="opinion_submit" value="{{$.Translation.CreatePoll}}" disabled></p>
     </form>
   </div>
 

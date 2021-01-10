@@ -86,6 +86,14 @@ type Translation struct {
 	FunctionRequiresJavaScript string
 	UserNotCreator             string
 	CreateNewPollRandom        string
+	OpinionPoll                string
+	OpinionItem                string
+	AddOpinionItem             string
+	OpinionGood                string
+	OpinionRatherGood          string
+	OpinionNeutral             string
+	OpinionRatherBad           string
+	OpinionBad                 string
 }
 
 const defaultLanguage = "en"

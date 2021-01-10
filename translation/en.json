@@ -55,5 +55,13 @@
     "SelectAll": "Select all",
     "FunctionRequiresJavaScript": "This function requires JavaScript enabled to work.",
     "UserNotCreator": "user is not creator",
-    "CreateNewPollRandom": "Create poll at random URL"
+    "CreateNewPollRandom": "Create poll at random URL",
+    "OpinionPoll": "Opinion poll",
+    "OpinionItem": "Item",
+    "AddOpinionItem": "Add item",
+    "OpinionGood": "Good",
+    "OpinionRatherGood": "Rather Good",
+    "OpinionNeutral": "Neutral",
+    "OpinionRatherBad": "Rather Bad",
+    "OpinionBad": "Bad"
 }

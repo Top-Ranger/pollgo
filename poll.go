@@ -563,13 +563,51 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 					return
 				}
 			}
-			if len(p.Questions) == 0 || len(p.AnswerOption) == 0 {
+			if len(p.Questions) == 0 {
 				rw.WriteHeader(http.StatusBadRequest)
 				tl := GetDefaultTranslation()
 				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(tl.PollNoOptions)), tl, config.ServerPath}
 				textTemplate.Execute(rw, t)
 				return
 			}
+			if !VerifyPollConfig(*p) {
+				rw.WriteHeader(http.StatusBadRequest)
+				t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation(), config.ServerPath}
+				textTemplate.Execute(rw, t)
+				return
+			}
+			p.initialised = true
+		case "opinion":
+			tl := GetDefaultTranslation()
+			p.Description = r.Form.Get("description")
+			// Questions
+			searchid := 0
+			budget := config.MaxNumberQuestions
+			for {
+				searchid++
+				name := r.Form.Get(fmt.Sprintf("opinionitem%d", searchid))
+				if name == "" {
+					break
+				}
+				p.Questions = append(p.Questions, name)
+				budget--
+				if budget < 0 {
+					rw.WriteHeader(http.StatusBadRequest)
+					t := textTemplateStruct{template.HTML(template.HTMLEscapeString(tl.PollToLargeError)), tl, config.ServerPath}
+					textTemplate.Execute(rw, t)
+					return
+				}
+			}
+			if len(p.Questions) == 0 {
+				rw.WriteHeader(http.StatusBadRequest)
+				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(tl.PollNoOptions)), tl, config.ServerPath}
+				textTemplate.Execute(rw, t)
+				return
+			}
+
+			// Answers
+			p.AnswerOption = [][]string{{tl.OpinionGood, "2", "#2D8C28"}, {tl.OpinionRatherGood, "1", "#76ca73"}, {tl.OpinionNeutral, "0", "#9a9a9a"}, {tl.OpinionRatherBad, "-1", "#ff8282"}, {tl.OpinionBad, "-2", "#BC2C2C"}}
+
 			if !VerifyPollConfig(*p) {
 				rw.WriteHeader(http.StatusBadRequest)
 				t := textTemplateStruct{"400 Bad Request", GetDefaultTranslation(), config.ServerPath}
