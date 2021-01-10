@@ -111,7 +111,7 @@
   </script>
 
   <div class="odd" id="normal_poll" hidden>
-    <p>{{.Translation.NormalPoll}}:</p>
+    <h2>{{.Translation.NormalPoll}}</h2>
     <form id="new_normal" method="POST">
       <input type="hidden" name="type" value="normal">
       <textarea id="textarea_normal" name="description" rows="5" form="new_normal" placeholder="{{.Translation.Description}}" maxlength="100000"></textarea> <br> <hr>
@@ -165,7 +165,7 @@
   </script>
 
   <div class="odd" id="date_poll" hidden>
-    <p>{{.Translation.AppointmentPoll}}</p>
+    <h2>{{.Translation.AppointmentPoll}}</h2>
     <form id="new_date" method="POST">
       <input type="hidden" name="type" value="date">
       <textarea id="textarea_date" name="description" rows="5" form="new_date" placeholder="{{.Translation.Description}}" maxlength="100000"></textarea> <br> <hr>
@@ -226,7 +226,7 @@
   </script>
 
   <div class="odd" id="opinion_poll" hidden>
-    <p>{{.Translation.OpinionPoll}}</p>
+    <h2>{{.Translation.OpinionPoll}}</h2>
     <form id="new_opinion" method="POST">
       <input type="hidden" name="type" value="opinion">
       <textarea id="textarea_opinion" name="description" rows="5" form="new_opinion" placeholder="{{.Translation.Description}}" maxlength="100000"></textarea> <br> <hr>
@@ -253,7 +253,7 @@
   </div>
 
   <div class="odd" id="config_poll" hidden>
-    <p>{{.Translation.LoadConfiguration}}:</p>
+    <h2>{{.Translation.LoadConfiguration}}</h2>
     <form id="new_config" method="POST">
       <input type="hidden" name="type" value="config">
       <textarea id="textarea_config" name="config" rows="30" form="new_config" placeholder="{{.Translation.Configuration}}" maxlength="10000000"></textarea> <br> <hr>
