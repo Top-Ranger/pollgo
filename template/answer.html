@@ -52,7 +52,7 @@
         <tr>
         <td>{{$E}}</td>
         {{range $i, $e := $.AnswerOption}}
-        <td class="centre" bgcolor="{{index $e 2}}" title="{{$E}} - {{index $e 0}}" onmouseenter="if(event.buttons&1 != 0){e=document.getElementById('{{$I}}_{{$i}}');e.checked=true;}" onclick="e=document.getElementById('{{$I}}_{{$i}}');e.checked=true;"><input title="{{$E}} - {{index $e 0}}" type="radio" id="{{$I}}_{{$i}}" name="{{$I}}" value="{{$i}}" required></td>
+        <td class="centre" bgcolor="{{index $e 2}}" title="{{$E}} - {{index $e 0}}" onmouseenter="if(event.buttons&1 != 0){e=document.getElementById('{{$I}}_{{$i}}');e.checked=true;}" onclick="e=document.getElementById('{{$I}}_{{$i}}');e.checked=true;" onmousedown="e=document.getElementById('{{$I}}_{{$i}}');e.checked=true;"><input title="{{$E}} - {{index $e 0}}" type="radio" id="{{$I}}_{{$i}}" name="{{$I}}" value="{{$i}}" required></td>
         {{end}}
         </tr>
         {{end}}
