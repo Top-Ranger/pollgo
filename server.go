@@ -198,6 +198,7 @@ func initialiseServer() error {
 			rw.Header().Set("Content-Type", "text/css")
 			err := cssTemplates.ExecuteTemplate(rw, path, struct{ ServerPath string }{config.ServerPath})
 			if err != nil {
+				rw.WriteHeader(http.StatusNotFound)
 				log.Println("server:", err)
 			}
 			return
