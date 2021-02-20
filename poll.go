@@ -20,7 +20,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"html/template"
-	"io/ioutil"
 	"log"
 	"math"
 	"net/http"
@@ -93,32 +92,18 @@ try {
 `))
 
 func init() {
-	b, err := ioutil.ReadFile("template/poll.html")
+	var err error
+	pollTemplate, err = template.ParseFS(templateFiles, "template/poll.html")
 	if err != nil {
 		panic(err)
 	}
 
-	pollTemplate, err = template.New("poll").Parse(string(b))
+	answerTemplate, err = template.ParseFS(templateFiles, "template/answer.html")
 	if err != nil {
 		panic(err)
 	}
 
-	b, err = ioutil.ReadFile("template/answer.html")
-	if err != nil {
-		panic(err)
-	}
-
-	answerTemplate, err = template.New("answer").Parse(string(b))
-	if err != nil {
-		panic(err)
-	}
-
-	b, err = ioutil.ReadFile("template/new.html")
-	if err != nil {
-		panic(err)
-	}
-
-	newTemplate, err = template.New("new").Parse(string(b))
+	newTemplate, err = template.ParseFS(templateFiles, "template/new.html")
 	if err != nil {
 		panic(err)
 	}
