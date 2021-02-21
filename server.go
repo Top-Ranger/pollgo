@@ -36,10 +36,6 @@ var serverStarted bool
 var server http.Server
 var rootPath string
 
-//go:embed template
-var templateFiles embed.FS
-var textTemplate *template.Template
-
 var dsgvo []byte
 var impressum []byte
 
@@ -53,10 +49,6 @@ Disallow: /`)
 
 func init() {
 	var err error
-	textTemplate, err = template.ParseFS(templateFiles, "template/text.html")
-	if err != nil {
-		panic(err)
-	}
 
 	cssTemplates, err = template.ParseFS(cachedFiles, "css/*")
 	if err != nil {
@@ -127,12 +119,6 @@ try {
 }
 </script>
 `
-
-type textTemplateStruct struct {
-	Text        template.HTML
-	Translation Translation
-	ServerPath  string
-}
 
 func initialiseServer() error {
 	if serverStarted {
