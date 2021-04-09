@@ -23,8 +23,8 @@
   <script>
   try {
     let a = getPolls();
-	  if (a["{{.}}"]) {
-		  delete a["{{.}}"];
+	  if (a["{{.Key}}"]) {
+		  delete a["{{.Key}}"];
   		savePolls(a);
     }
   } catch (e) {
