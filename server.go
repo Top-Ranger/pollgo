@@ -250,6 +250,7 @@ func initialiseServer() error {
 
 func rootHandle(rw http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPut {
+		rw.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 		if config.AuthenticationEnabled {
 			err := r.ParseMultipartForm(10000000) // 10 MB
 			if err != nil {
