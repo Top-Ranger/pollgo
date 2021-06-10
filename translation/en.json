@@ -56,6 +56,8 @@
     "FunctionRequiresJavaScript": "This function requires JavaScript enabled to work.",
     "UserNotCreator": "user is not creator",
     "CreateNewPollRandom": "Create poll at random URL",
+    "PleaseWait": "Please wait",
+	"AuthentificationFailure": "Authentification failure (wrong password?)",
     "OpinionPoll": "Opinion poll",
     "OpinionItem": "Item",
     "AddOpinionItem": "Add item",

@@ -249,6 +249,41 @@ func initialiseServer() error {
 }
 
 func rootHandle(rw http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPut {
+		if config.AuthenticationEnabled {
+			err := r.ParseMultipartForm(10000000) // 10 MB
+			if err != nil {
+				rw.WriteHeader(http.StatusInternalServerError)
+				return
+			}
+
+			user, pw := r.Form.Get("user"), r.Form.Get("pw")
+			if len(user) == 0 || len(pw) == 0 {
+				rw.WriteHeader(http.StatusForbidden)
+				return
+			}
+			correct, err := authenticater.Authenticate(user, pw)
+			if err != nil {
+				rw.WriteHeader(http.StatusInternalServerError)
+				rw.Write([]byte(err.Error()))
+				return
+			}
+			if !correct {
+				if config.LogFailedLogin {
+					log.Printf("Failed authentication from %s", GetRealIP(r))
+				}
+				rw.WriteHeader(http.StatusForbidden)
+				return
+			}
+
+			// Valid password
+			rw.WriteHeader(http.StatusAccepted)
+		} else {
+			rw.WriteHeader(http.StatusNotImplemented)
+			return
+		}
+	}
+
 	if r.URL.Path == rootPath || r.URL.Path == config.ServerPath || r.URL.Path == "/" {
 		rw.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 		tl := GetDefaultTranslation()

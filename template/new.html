@@ -109,6 +109,33 @@
       target.appendChild(c);
       target.appendChild(b);
     }
+
+    {{if .HasPassword}}
+    function normalSubmit() {
+      document.getElementById("normal_message").textContent = {{.Translation.PleaseWait}}
+      let form = new FormData();
+      form.append("user", document.getElementById("normal_user").value);
+      form.append("pw", document.getElementById("normal_pw").value);
+      let xhr = new XMLHttpRequest();
+      xhr.open("Put", window.location, true);
+      
+      xhr.onload = function() {
+        if (xhr.status == 202) { 
+          document.getElementById("new_normal").submit();
+        } else if (xhr.status == 403) {
+          document.getElementById("normal_message").textContent = {{.Translation.AuthentificationFailure}};
+        } else {
+          document.getElementById("normal_message").textContent = xhr.responseText;
+        }
+      };
+
+      xhr.send(form);
+    }
+    {{else}}
+    function normalSubmit() {
+      document.getElementById("new_normal").submit();
+    }
+    {{end}}
   </script>
 
   <div class="odd" id="normal_poll" hidden>
@@ -138,7 +165,8 @@
       </table>
       {{end}}
       <input type="checkbox" id="dsgvo_normal" name="dsgvo" onclick="document.getElementById('normal_submit').disabled = !this.checked" required><label for=dsgvo_normal>{{.Translation.AcceptPrivacyPolicy}}</label> <br>
-      <p><input type="submit" id="normal_submit" value="{{$.Translation.CreatePoll}}" disabled></p>
+      <p id="normal_message"></p>
+      <p><button id="normal_submit" form="no_form" onclick="normalSubmit();" disabled>{{$.Translation.CreatePoll}}</button></p>
     </form>
   </div>
 
@@ -163,6 +191,33 @@
       target.appendChild(i);
       target.appendChild(b);
     }
+
+    {{if .HasPassword}}
+    function dateSubmit() {
+      document.getElementById("date_message").textContent = {{.Translation.PleaseWait}}
+      let form = new FormData();
+      form.append("user", document.getElementById("date_user").value);
+      form.append("pw", document.getElementById("date_pw").value);
+      let xhr = new XMLHttpRequest();
+      xhr.open("Put", window.location, true);
+      
+      xhr.onload = function() {
+        if (xhr.status == 202) { 
+          document.getElementById("new_date").submit();
+        } else if (xhr.status == 403) {
+          document.getElementById("date_message").textContent = {{.Translation.AuthentificationFailure}};
+        } else {
+          document.getElementById("date_message").textContent = xhr.responseText;
+        }
+      };
+
+      xhr.send(form);
+    }
+    {{else}}
+    function dateSubmit() {
+      document.getElementById("new_date").submit();
+    }
+    {{end}}
   </script>
 
   <div class="odd" id="date_poll" hidden>
@@ -197,7 +252,8 @@
       </table>
       {{end}}
       <input type="checkbox" id="dsgvo_date" name="dsgvo" onclick="document.getElementById('date_submit').disabled = !this.checked" required><label for=dsgvo_date>{{.Translation.AcceptPrivacyPolicy}}</label> <br>
-      <p><input type="submit" id="date_submit" value="{{$.Translation.CreatePoll}}" disabled></p>
+      <p id="date_message"></p>
+      <p><button id="date_submit" form="no_form" onclick="dateSubmit();" disabled>{{$.Translation.CreatePoll}}</button></p>
     </form>
   </div>
 
@@ -224,6 +280,33 @@
     target.appendChild(i);
     target.appendChild(b);
   }
+
+  {{if .HasPassword}}
+    function opinionSubmit() {
+      document.getElementById("opinion_message").textContent = {{.Translation.PleaseWait}}
+      let form = new FormData();
+      form.append("user", document.getElementById("opinion_user").value);
+      form.append("pw", document.getElementById("opinion_pw").value);
+      let xhr = new XMLHttpRequest();
+      xhr.open("Put", window.location, true);
+      
+      xhr.onload = function() {
+        if (xhr.status == 202) { 
+          document.getElementById("new_opinion").submit();
+        } else if (xhr.status == 403) {
+          document.getElementById("opinion_message").textContent = {{.Translation.AuthentificationFailure}};
+        } else {
+          document.getElementById("opinion_message").textContent = xhr.responseText;
+        }
+      };
+
+      xhr.send(form);
+    }
+    {{else}}
+    function opinionSubmit() {
+      document.getElementById("new_opinion").submit();
+    }
+    {{end}}
   </script>
 
   <div class="odd" id="opinion_poll" hidden>
@@ -249,9 +332,39 @@
       </table>
       {{end}}
       <input type="checkbox" id="dsgvo_opinion" name="dsgvo" onclick="document.getElementById('opinion_submit').disabled = !this.checked" required><label for=dsgvo_opinion>{{.Translation.AcceptPrivacyPolicy}}</label> <br>
-      <p><input type="submit" id="opinion_submit" value="{{$.Translation.CreatePoll}}" disabled></p>
+      <p id="opinion_message"></p>
+      <p><button id="opinion_submit" form="no_form" onclick="opinionSubmit();" disabled>{{$.Translation.CreatePoll}}</button></p>
     </form>
   </div>
+
+  <script>
+      {{if .HasPassword}}
+    function configSubmit() {
+      document.getElementById("config_message").textContent = {{.Translation.PleaseWait}}
+      let form = new FormData();
+      form.append("user", document.getElementById("config_user").value);
+      form.append("pw", document.getElementById("config_pw").value);
+      let xhr = new XMLHttpRequest();
+      xhr.open("Put", window.location, true);
+      
+      xhr.onload = function() {
+        if (xhr.status == 202) { 
+          document.getElementById("new_config").submit();
+        } else if (xhr.status == 403) {
+          document.getElementById("config_message").textContent = {{.Translation.AuthentificationFailure}};
+        } else {
+          document.getElementById("config_message").textContent = xhr.responseText;
+        }
+      };
+
+      xhr.send(form);
+    }
+    {{else}}
+    function configSubmit() {
+      document.getElementById("new_config").submit();
+    }
+    {{end}}
+  </script>
 
   <div class="odd" id="config_poll" hidden>
     <h2>{{.Translation.LoadConfiguration}}</h2>
@@ -271,7 +384,8 @@
       </table>
       {{end}}
       <input type="checkbox" id="dsgvo_config" name="dsgvo" onclick="document.getElementById('config_submit').disabled = !this.checked" required><label for=dsgvo_config>{{.Translation.AcceptPrivacyPolicy}}</label> <br>
-      <p><input type="submit" id="config_submit" value="{{$.Translation.CreatePoll}}" disabled></p>
+      <p id="config_message"></p>
+      <p><button id="config_submit" form="no_form" onclick="configSubmit();" disabled>{{$.Translation.CreatePoll}}</button></p>
     </form>
   </div>
 

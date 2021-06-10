@@ -84,6 +84,8 @@ type Translation struct {
 	FunctionRequiresJavaScript string
 	UserNotCreator             string
 	CreateNewPollRandom        string
+	PleaseWait                 string
+	AuthentificationFailure    string
 	OpinionPoll                string
 	OpinionItem                string
 	AddOpinionItem             string
