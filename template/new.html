@@ -117,6 +117,7 @@
       form.append("user", document.getElementById("normal_user").value);
       form.append("pw", document.getElementById("normal_pw").value);
       let xhr = new XMLHttpRequest();
+      xhr.timeout = 10000;
       xhr.open("Put", window.location, true);
       
       xhr.onload = function() {
@@ -129,7 +130,11 @@
         }
       };
 
-      xhr.onerror = function(e) {
+      xhr.onerror = function() {
+        document.getElementById("normal_message").textContent = {{.Translation.ErrorOccured}}
+      };
+
+      xhr.ontimeout = function() {
         document.getElementById("normal_message").textContent = {{.Translation.ErrorOccured}}
       };
 
@@ -203,6 +208,7 @@
       form.append("user", document.getElementById("date_user").value);
       form.append("pw", document.getElementById("date_pw").value);
       let xhr = new XMLHttpRequest();
+      xhr.timeout = 10000;
       xhr.open("Put", window.location, true);
       
       xhr.onload = function() {
@@ -215,7 +221,11 @@
         }
       };
 
-      xhr.onerror = function(e) {
+      xhr.onerror = function() {
+        document.getElementById("date_message").textContent = {{.Translation.ErrorOccured}}
+      };
+
+      xhr.ontimeout = function() {
         document.getElementById("date_message").textContent = {{.Translation.ErrorOccured}}
       };
 
@@ -296,6 +306,7 @@
       form.append("user", document.getElementById("opinion_user").value);
       form.append("pw", document.getElementById("opinion_pw").value);
       let xhr = new XMLHttpRequest();
+      xhr.timeout = 10000;
       xhr.open("Put", window.location, true);
       
       xhr.onload = function() {
@@ -309,6 +320,10 @@
       };
 
       xhr.onerror = function(e) {
+        document.getElementById("opinion_message").textContent = {{.Translation.ErrorOccured}}
+      };
+
+      xhr.ontimeout = function(e) {
         document.getElementById("opinion_message").textContent = {{.Translation.ErrorOccured}}
       };
 
@@ -357,6 +372,7 @@
       form.append("user", document.getElementById("config_user").value);
       form.append("pw", document.getElementById("config_pw").value);
       let xhr = new XMLHttpRequest();
+      xhr.timeout = 10000;
       xhr.open("Put", window.location, true);
       
       xhr.onload = function() {
@@ -370,6 +386,10 @@
       };
 
       xhr.onerror = function(e) {
+        document.getElementById("config_message").textContent = {{.Translation.ErrorOccured}}
+      };
+
+      xhr.ontimeout = function(e) {
         document.getElementById("config_message").textContent = {{.Translation.ErrorOccured}}
       };
 

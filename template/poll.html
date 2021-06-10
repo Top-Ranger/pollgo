@@ -182,6 +182,7 @@
       form.append("user", document.getElementById("user").value);
       form.append("pw", document.getElementById("pw").value);
       let xhr = new XMLHttpRequest();
+      xhr.timeout = 10000;
       xhr.open("Put", window.location, true);
       
       xhr.onload = function() {
@@ -195,6 +196,10 @@
       };
 
       xhr.onerror = function(e) {
+        document.getElementById("message").textContent = {{.Translation.ErrorOccured}}
+      };
+
+      xhr.ontimeout = function(e) {
         document.getElementById("message").textContent = {{.Translation.ErrorOccured}}
       };
 
