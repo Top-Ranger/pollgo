@@ -280,6 +280,7 @@ func rootHandle(rw http.ResponseWriter, r *http.Request) {
 			rw.WriteHeader(http.StatusAccepted)
 		} else {
 			rw.WriteHeader(http.StatusNotImplemented)
+			rw.Write([]byte("501 Not Implemented"))
 			return
 		}
 	}
