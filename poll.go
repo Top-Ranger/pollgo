@@ -206,8 +206,8 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 					}
 				}
 
-				// Test if user is creator
-				if config.OnlyCreatorCanDelete {
+				// Test if user is creator - this can be skipped if no authentification is enabled
+				if config.AuthenticationEnabled && config.OnlyCreatorCanDelete {
 					user := r.Form.Get("user") // is already authenticated
 					creator, err := safe.GetPollCreator(key)
 					if err != nil {
