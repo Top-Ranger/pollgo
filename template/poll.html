@@ -174,6 +174,35 @@
       </form>
   </div>
 
+  <script>
+    {{if .HasPassword}}
+    function submitDelete() {
+      document.getElementById("message").textContent = {{.Translation.PleaseWait}}
+      let form = new FormData();
+      form.append("user", document.getElementById("user").value);
+      form.append("pw", document.getElementById("pw").value);
+      let xhr = new XMLHttpRequest();
+      xhr.open("Put", window.location, true);
+      
+      xhr.onload = function() {
+        if (xhr.status == 202) { 
+          document.getElementById("delete_poll").submit();
+        } else if (xhr.status == 403) {
+          document.getElementById("message").textContent = {{.Translation.AuthentificationFailure}};
+        } else {
+          document.getElementById("message").textContent = xhr.responseText;
+        }
+      };
+
+      xhr.send(form);
+    }
+    {{else}}
+    function submitDelete() {
+      document.getElementById("delete_poll").submit();
+    }
+    {{end}}
+  </script>
+
   <div class="even">
     <details>
       <summary>{{.Translation.MoreOptions}}</summary>
@@ -182,7 +211,7 @@
         <p><input type="submit" value="{{.Translation.ExportConfiguration}}"></p>
       </form>
       <hr>
-      <form method="POST">
+      <form id="delete_poll" method="POST">
         <input type="hidden" name="delete" value="true">
         {{if .HasPassword}}
           <table style="border: none;">
@@ -195,8 +224,9 @@
              <td style="border: none;"><input type="password" id="pw" name="pw" maxlength="500" required></td>
             </tr>
           </table>
+        <p id="message"></p>
         {{end}}
-        <p><input type="submit" value="{{.Translation.DeletePoll}}"></p>
+        <p><button form="no_form" onclick="submitDelete();">{{.Translation.DeletePoll}}</button></p>
       </form>
     </details>
     <p></p>
