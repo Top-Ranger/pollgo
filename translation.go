@@ -86,6 +86,7 @@ type Translation struct {
 	CreateNewPollRandom        string
 	PleaseWait                 string
 	AuthentificationFailure    string
+	ErrorOccured               string
 	OpinionPoll                string
 	OpinionItem                string
 	AddOpinionItem             string

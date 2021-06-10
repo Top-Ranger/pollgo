@@ -58,6 +58,7 @@
     "CreateNewPollRandom": "Umfrage erstellen (zufällige URL)",
     "PleaseWait": "Bitte warten",
 	"AuthentificationFailure": "Fehler bei Authentifikation (falsches Passwort?)",
+    "ErrorOccured": "Ein Fehler ist aufgetreten. Bitte probieren Sie es später noch einmal.",
     "OpinionPoll": "Meinungsumfrage",
     "OpinionItem": "Item",
     "AddOpinionItem": "Item hinzufügen",

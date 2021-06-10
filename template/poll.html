@@ -194,6 +194,10 @@
         }
       };
 
+      xhr.onerror = function(e) {
+        document.getElementById("message").textContent = {{.Translation.ErrorOccured}}
+      };
+
       xhr.send(form);
     }
     {{else}}

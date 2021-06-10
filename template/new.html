@@ -129,6 +129,10 @@
         }
       };
 
+      xhr.onerror = function(e) {
+        document.getElementById("normal_message").textContent = {{.Translation.ErrorOccured}}
+      };
+
       xhr.send(form);
     }
     {{else}}
@@ -209,6 +213,10 @@
         } else {
           document.getElementById("date_message").textContent = xhr.responseText;
         }
+      };
+
+      xhr.onerror = function(e) {
+        document.getElementById("date_message").textContent = {{.Translation.ErrorOccured}}
       };
 
       xhr.send(form);
@@ -300,6 +308,10 @@
         }
       };
 
+      xhr.onerror = function(e) {
+        document.getElementById("opinion_message").textContent = {{.Translation.ErrorOccured}}
+      };
+
       xhr.send(form);
     }
     {{else}}
@@ -355,6 +367,10 @@
         } else {
           document.getElementById("config_message").textContent = xhr.responseText;
         }
+      };
+
+      xhr.onerror = function(e) {
+        document.getElementById("config_message").textContent = {{.Translation.ErrorOccured}}
       };
 
       xhr.send(form);

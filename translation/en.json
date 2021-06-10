@@ -58,6 +58,7 @@
     "CreateNewPollRandom": "Create poll at random URL",
     "PleaseWait": "Please wait",
 	"AuthentificationFailure": "Authentification failure (wrong password?)",
+    "ErrorOccured": "An error occured. Please try again later.",
     "OpinionPoll": "Opinion poll",
     "OpinionItem": "Item",
     "AddOpinionItem": "Add item",
