@@ -256,6 +256,7 @@ func rootHandle(rw http.ResponseWriter, r *http.Request) {
 			err := r.ParseMultipartForm(10000000) // 10 MB
 			if err != nil {
 				rw.WriteHeader(http.StatusInternalServerError)
+				rw.Write([]byte(err.Error()))
 				return
 			}
 
