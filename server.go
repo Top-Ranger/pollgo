@@ -249,6 +249,7 @@ func initialiseServer() error {
 }
 
 func rootHandle(rw http.ResponseWriter, r *http.Request) {
+	// Is this a check password request?
 	if r.Method == http.MethodPut {
 		rw.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
 		if config.AuthenticationEnabled {
@@ -282,8 +283,8 @@ func rootHandle(rw http.ResponseWriter, r *http.Request) {
 		} else {
 			rw.WriteHeader(http.StatusNotImplemented)
 			rw.Write([]byte("501 Not Implemented"))
-			return
 		}
+		return
 	}
 
 	if r.URL.Path == rootPath || r.URL.Path == config.ServerPath || r.URL.Path == "/" {
