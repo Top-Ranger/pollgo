@@ -129,3 +129,15 @@ pre {
 .whitefont {
     color: white;
 }
+
+.noselect {
+    user-select: none;
+    pointer-events: none;
+    
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+}
