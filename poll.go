@@ -363,12 +363,30 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			p.Description = r.Form.Get("description")
 			// Questions
 			searchid := 0
+			searchuntil, err := strconv.Atoi(r.Form.Get("normalanswer"))
+			if err != nil {
+				rw.WriteHeader(http.StatusBadRequest)
+				tl := GetDefaultTranslation()
+				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), tl, config.ServerPath}
+				textTemplate.Execute(rw, t)
+				return
+			}
 			budget := config.MaxNumberQuestions
+			if searchuntil > budget*2 { // Allow for a few blank fields here
+				rw.WriteHeader(http.StatusBadRequest)
+				tl := GetDefaultTranslation()
+				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(tl.PollToLargeError)), tl, config.ServerPath}
+				textTemplate.Execute(rw, t)
+				return
+			}
 			for {
 				searchid++
+				if searchid > searchuntil+1 {
+					break
+				}
 				name := r.Form.Get(fmt.Sprintf("normalanswer%d", searchid))
 				if name == "" {
-					break
+					continue
 				}
 				p.Questions = append(p.Questions, name)
 				budget--
@@ -382,12 +400,30 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			}
 			// Answers
 			searchid = 0
+			searchuntil, err = strconv.Atoi(r.Form.Get("normalansweroption"))
+			if err != nil {
+				rw.WriteHeader(http.StatusBadRequest)
+				tl := GetDefaultTranslation()
+				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), tl, config.ServerPath}
+				textTemplate.Execute(rw, t)
+				return
+			}
 			budget = config.MaxNumberQuestions
+			if searchuntil > budget*2 { // Allow for a few blank fields here
+				rw.WriteHeader(http.StatusBadRequest)
+				tl := GetDefaultTranslation()
+				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(tl.PollToLargeError)), tl, config.ServerPath}
+				textTemplate.Execute(rw, t)
+				return
+			}
 			for {
 				searchid++
+				if searchid > searchuntil+1 {
+					break
+				}
 				answer := r.Form.Get(fmt.Sprintf("normalansweroption%d", searchid))
 				if answer == "" {
-					break
+					continue
 				}
 				value := r.Form.Get(fmt.Sprintf("normalanswervalue%d", searchid))
 				if value == "" {
@@ -472,11 +508,30 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			times := make([][]int, 0)
 			test := make(map[string]bool)
 			searchid := 0
+			searchuntil, err := strconv.Atoi(r.Form.Get("timeanswer"))
+			if err != nil {
+				rw.WriteHeader(http.StatusBadRequest)
+				tl := GetDefaultTranslation()
+				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), tl, config.ServerPath}
+				textTemplate.Execute(rw, t)
+				return
+			}
+			budget := config.MaxNumberQuestions
+			if searchuntil > budget*2 { // Allow for a few blank fields here
+				rw.WriteHeader(http.StatusBadRequest)
+				tl := GetDefaultTranslation()
+				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(tl.PollToLargeError)), tl, config.ServerPath}
+				textTemplate.Execute(rw, t)
+				return
+			}
 			for {
 				searchid++
+				if searchid > searchuntil+1 {
+					break
+				}
 				name := r.Form.Get(fmt.Sprintf("time%d", searchid))
 				if name == "" {
-					break
+					continue
 				}
 				tn := make([]int, 2)
 				split := strings.Split(name, ":")
@@ -525,7 +580,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			sort.Sort(timesSort(times))
 
 			// Generate questions
-			budget := config.MaxNumberQuestions
+			budget = config.MaxNumberQuestions
 			for start.Before(end) {
 				process := start
 				start = start.AddDate(0, 0, 1)
@@ -567,12 +622,30 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			p.Description = r.Form.Get("description")
 			// Questions
 			searchid := 0
+			searchuntil, err := strconv.Atoi(r.Form.Get("opinionitem"))
+			if err != nil {
+				rw.WriteHeader(http.StatusBadRequest)
+				tl := GetDefaultTranslation()
+				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), tl, config.ServerPath}
+				textTemplate.Execute(rw, t)
+				return
+			}
 			budget := config.MaxNumberQuestions
+			if searchuntil > budget*2 { // Allow for a few blank fields here
+				rw.WriteHeader(http.StatusBadRequest)
+				tl := GetDefaultTranslation()
+				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(tl.PollToLargeError)), tl, config.ServerPath}
+				textTemplate.Execute(rw, t)
+				return
+			}
 			for {
 				searchid++
+				if searchid > searchuntil+1 {
+					break
+				}
 				name := r.Form.Get(fmt.Sprintf("opinionitem%d", searchid))
 				if name == "" {
-					break
+					continue
 				}
 				p.Questions = append(p.Questions, name)
 				budget--

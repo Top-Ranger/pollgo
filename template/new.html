@@ -71,6 +71,8 @@
       target.appendChild(l);
       target.appendChild(i);
       target.appendChild(b);
+
+      document.getElementById("normal_number_answer").value = normalanswer
     }
 
     var normalansweroption = 2
@@ -109,6 +111,8 @@
       target.appendChild(n);
       target.appendChild(c);
       target.appendChild(b);
+
+      document.getElementById("normal_number_answeroption").value = normalansweroption
     }
 
     {{if .HasPassword}}
@@ -152,6 +156,8 @@
     <h2>{{.Translation.NormalPoll}}</h2>
     <form id="new_normal" method="POST">
       <input type="hidden" name="type" value="normal">
+      <input id="normal_number_answer" type="hidden" name="normalanswer" value="1">
+      <input id="normal_number_answeroption" type="hidden" name="normalansweroption" value="2">
       <textarea id="textarea_normal" name="description" rows="5" form="new_normal" placeholder="{{.Translation.Description}}" maxlength="100000"></textarea> <br> <hr>
       <div id="normal_answers">
         <label for="normalanswer1">{{.Translation.Question}}: </label><input type="text" id="normalanswer1" name="normalanswer1" placeholder="{{.Translation.Question}}" maxlength="500"> <br>
@@ -200,6 +206,8 @@
       target.appendChild(l);
       target.appendChild(i);
       target.appendChild(b);
+
+      document.getElementById("date_timeanswer").value = timeanswer
     }
 
     {{if .HasPassword}}
@@ -243,6 +251,7 @@
     <h2>{{.Translation.AppointmentPoll}}</h2>
     <form id="new_date" method="POST">
       <input type="hidden" name="type" value="date">
+      <input id="date_timeanswer" type="hidden" name="timeanswer" value="1">
       <textarea id="textarea_date" name="description" rows="5" form="new_date" placeholder="{{.Translation.Description}}" maxlength="100000"></textarea> <br> <hr>
       <label for="start">{{.Translation.StartDate}}:</label> <input type="date" id="start" name="start" required> <br>
       <label for="end">{{.Translation.EndDate}}:</label> <input type="date" id="end" name="end" required> <br> <hr>
@@ -298,6 +307,8 @@
     target.appendChild(l);
     target.appendChild(i);
     target.appendChild(b);
+
+    document.getElementById("opinion_number_opinionitem").value = opinionitem
   }
 
   {{if .HasPassword}}
@@ -341,6 +352,7 @@
     <h2>{{.Translation.OpinionPoll}}</h2>
     <form id="new_opinion" method="POST">
       <input type="hidden" name="type" value="opinion">
+      <input id="opinion_number_opinionitem" type="hidden" name="opinionitem" value="2">
       <textarea id="textarea_opinion" name="description" rows="5" form="new_opinion" placeholder="{{.Translation.Description}}" maxlength="100000"></textarea> <br> <hr>
       <div id="opinion_items">
         <label for="opinionitem1">{{.Translation.OpinionItem}}: </label><input type="text" id="opinionitem1" name="opinionitem1" maxlength="500" placeholder="{{.Translation.OpinionItem}}"> <br>
