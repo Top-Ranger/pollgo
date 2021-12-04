@@ -18,6 +18,9 @@ go build
 To build the LDAP authenticater, you have to use the following build command:
 go build -tags="ldap"
 
+To build the MySQL / MariaDB backend, you have to use the following build command:
+go build -tags="mysql"
+
 A sample configration can be found at 'config.json'.
 To create a poll, simply browse to the future location of the poll.
 No seperate creation is needed.

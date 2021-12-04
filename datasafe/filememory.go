@@ -45,11 +45,11 @@ func init() {
 	}
 }
 
-// ErrNotActive is an error which is returned if fileMemory is used without initialising
-var ErrNotActive = errors.New("filememory was not activated")
+// ErrFileMemoryNotActive is an error which is returned if fileMemory is used without initialising
+var ErrFileMemoryNotActive = errors.New("filememory was not activated")
 
-// ErrInvalidID is an error which is returned if ID is invalid
-var ErrInvalidID = errors.New("filememory got invalid ID")
+// ErrFileMemoryInvalidID is an error which is returned if ID is invalid
+var ErrFileMemoryInvalidID = errors.New("filememory got invalid ID")
 
 // FileMemoryName contains the name of the DataSafe
 const FileMemoryName = "FileMemory"
@@ -97,7 +97,7 @@ type FileMemoryPollResult struct {
 func (fm FileMemory) getInternalID(ID string) (string, error) {
 	// ﷐
 	if strings.Contains(ID, "﷐") {
-		return "", ErrInvalidID
+		return "", ErrFileMemoryInvalidID
 	}
 	return strings.ReplaceAll(ID, string(os.PathSeparator), "﷐"), nil
 }
@@ -107,7 +107,7 @@ func (fm *FileMemory) SavePollResult(pollID, name, comment string, results []int
 	fm.l.Lock()
 	defer fm.l.Unlock()
 	if !fm.active {
-		return ErrNotActive
+		return ErrFileMemoryNotActive
 	}
 	err := fm.testload(pollID)
 	if err != nil {
@@ -133,7 +133,7 @@ func (fm *FileMemory) GetPollResult(pollID string) ([][]int, []string, []string,
 	fm.l.Lock()
 	defer fm.l.Unlock()
 	if !fm.active {
-		return nil, nil, nil, ErrNotActive
+		return nil, nil, nil, ErrFileMemoryNotActive
 	}
 
 	err := fm.testload(pollID)
@@ -157,7 +157,7 @@ func (fm *FileMemory) SavePollConfig(pollID string, config []byte) error {
 	fm.l.Lock()
 	defer fm.l.Unlock()
 	if !fm.active {
-		return ErrNotActive
+		return ErrFileMemoryNotActive
 	}
 	err := fm.testload(pollID)
 	if err != nil {
@@ -181,7 +181,7 @@ func (fm *FileMemory) GetPollConfig(pollID string) ([]byte, error) {
 	fm.l.Lock()
 	defer fm.l.Unlock()
 	if !fm.active {
-		return nil, ErrNotActive
+		return nil, ErrFileMemoryNotActive
 	}
 
 	err := fm.testload(pollID)
@@ -205,7 +205,7 @@ func (fm *FileMemory) SavePollCreator(pollID, name string) error {
 	fm.l.Lock()
 	defer fm.l.Unlock()
 	if !fm.active {
-		return ErrNotActive
+		return ErrFileMemoryNotActive
 	}
 	err := fm.testload(pollID)
 	if err != nil {
@@ -229,7 +229,7 @@ func (fm *FileMemory) GetPollCreator(pollID string) (string, error) {
 	fm.l.Lock()
 	defer fm.l.Unlock()
 	if !fm.active {
-		return "", ErrNotActive
+		return "", ErrFileMemoryNotActive
 	}
 
 	err := fm.testload(pollID)
@@ -254,7 +254,7 @@ func (fm *FileMemory) MarkPollDeleted(pollID string) error {
 	fm.l.Lock()
 	defer fm.l.Unlock()
 	if !fm.active {
-		return ErrNotActive
+		return ErrFileMemoryNotActive
 	}
 	err := fm.testload(pollID)
 	if err != nil {
@@ -278,7 +278,7 @@ func (fm *FileMemory) RunGC() error {
 	fm.l.Lock()
 	defer fm.l.Unlock()
 	if !fm.active {
-		return ErrNotActive
+		return ErrFileMemoryNotActive
 	}
 
 	// First remove deleted entries from memory
@@ -336,7 +336,7 @@ func (fm *FileMemory) LoadConfig(data []byte) error {
 	fm.l.Lock()
 	defer fm.l.Unlock()
 	if fm.active {
-		return ErrNotActive
+		return ErrFileMemoryNotActive
 	}
 
 	err := json.Unmarshal(data, fm)
@@ -509,7 +509,6 @@ func (fm *FileMemory) testload(pollID string) error {
 
 func (fm *FileMemory) load(ID string) (FileMemoryPollResult, error) {
 	f, err := os.Open(filepath.Join(fm.Path, ID))
-	defer f.Close()
 	if os.IsNotExist(err) {
 		// No data was ever saved, just create an empty result
 		return FileMemoryPollResult{LastAccess: time.Now()}, nil
@@ -517,6 +516,8 @@ func (fm *FileMemory) load(ID string) (FileMemoryPollResult, error) {
 		// some file error
 		return FileMemoryPollResult{LastAccess: time.Now()}, err
 	}
+	defer f.Close()
+
 	dec := gob.NewDecoder(f)
 	var data [][]int
 	var names []string
@@ -573,11 +574,12 @@ func (fm *FileMemory) save(ID string) error {
 
 	// Save poll
 	f, err := os.Create(filepath.Join(fm.Path, ID))
-	defer f.Close()
 	if err != nil {
 		// some file error
 		return err
 	}
+	defer f.Close()
+
 	enc := gob.NewEncoder(f)
 	err = enc.Encode(&p.Data)
 	if err != nil {
