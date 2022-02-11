@@ -8,10 +8,10 @@ require (
 	github.com/go-ldap/ldap/v3 v3.4.1
 	github.com/go-playground/colors v1.2.0
 	github.com/go-sql-driver/mysql v1.6.0
-	github.com/microcosm-cc/bluemonday v1.0.17
-	github.com/yuin/goldmark v1.4.4
-	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3
-	golang.org/x/net v0.0.0-20220107192237-5cfca573fb4d // indirect
-	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e // indirect
-	golang.org/x/time v0.0.0-20211116232009-f0f3c7e86c11
+	github.com/microcosm-cc/bluemonday v1.0.18
+	github.com/yuin/goldmark v1.4.5
+	golang.org/x/crypto v0.0.0-20220210151621-f4118a5b28e2
+	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
+	golang.org/x/sys v0.0.0-20220209214540-3681064d5158 // indirect
+	golang.org/x/time v0.0.0-20220210224613-90d013bbcef8
 )
