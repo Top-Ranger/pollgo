@@ -108,18 +108,8 @@ func (m *MySQL) OverwritePollResult(pollID, answerID, name, comment string, resu
 		return fmt.Errorf("mysql: can not convert results: %w", err)
 	}
 	b := buf.Bytes()
-	r, err := m.db.Exec("UPDATE result SET name=?, comment=?, results=?, `change`=? WHERE poll=? AND id=?", name, comment, b, change, pollID, id)
-	if err != nil {
-		return err
-	}
-	n, err := r.RowsAffected()
-	if err != nil {
-		return err
-	}
-	if n != 1 {
-		return fmt.Errorf("mysql: update changed %d rows", n)
-	}
-	return nil
+	_, err = m.db.Exec("UPDATE result SET name=?, comment=?, results=?, `change`=? WHERE poll=? AND id=?", name, comment, b, change, pollID, id)
+	return err
 }
 
 func (m *MySQL) GetPollResult(pollID string) ([][]int, []string, []string, []string, error) {
