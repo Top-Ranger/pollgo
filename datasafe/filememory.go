@@ -128,7 +128,7 @@ func (fm *FileMemory) SavePollResult(pollID, name, comment string, results []int
 	p.Names = append(p.Names, name)
 	p.Comments = append(p.Comments, comment)
 	p.Change = append(p.Change, change)
-	id := fm.getRandomID()
+	id := fmt.Sprintf("%d-%s", len(p.Change), fm.getRandomID())
 	p.IDs = append(p.IDs, id)
 	p.LastAccess = time.Now()
 	fm.memory[pollID] = p
@@ -735,7 +735,7 @@ func (fm *FileMemory) save(ID string) error {
 }
 
 func (fm FileMemory) getRandomID() string {
-	b := make([]byte, 15)
+	b := make([]byte, 5)
 	_, err := rand.Read(b)
 	if err != nil {
 		return ""
