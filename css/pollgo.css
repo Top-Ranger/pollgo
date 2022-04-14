@@ -15,7 +15,7 @@
 
 @font-face {
     font-family: 'Noto Sans Symbols 2';
-    src: local('Noto Sans Symbols 2'), url({{.ServerPath}}/font/NotoSansSymbols2-Regular.ttf);
+    src: local('Noto Sans Symbols2'), local('Noto Sans Symbols2 Regular'), url({{.ServerPath}}/font/NotoSansSymbols2-Regular.ttf);
 }
 
 html {
