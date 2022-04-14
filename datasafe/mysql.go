@@ -3,7 +3,7 @@
 package datasafe
 
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2020 Marcus Soll
+// Copyright 2020,2022 Marcus Soll
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -75,9 +75,9 @@ func (m *MySQL) SavePollResult(pollID, name, comment string, results []int, chan
 		return "", fmt.Errorf("mysql: can not convert results: %w", err)
 	}
 	b := buf.Bytes()
-	r, err := m.db.Exec("INSERT INTO result (poll, name, comment, results, change) VALUES (?,?,?,?,?)", pollID, name, comment, b, change)
+	r, err := m.db.Exec("INSERT INTO result (poll, name, comment, results, `change`) VALUES (?,?,?,?,?)", pollID, name, comment, b, change)
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 	lastInserted, err := r.LastInsertId()
 	if err != nil {
@@ -108,7 +108,7 @@ func (m *MySQL) OverwritePollResult(pollID, answerID, name, comment string, resu
 		return fmt.Errorf("mysql: can not convert results: %w", err)
 	}
 	b := buf.Bytes()
-	r, err := m.db.Exec("UPDATE result SET name=?, comment=?, results=?, change=? WHERE poll=? AND id=?", name, comment, b, change, pollID, id)
+	r, err := m.db.Exec("UPDATE result SET name=?, comment=?, results=?, `change`=? WHERE poll=? AND id=?", name, comment, b, change, pollID, id)
 	if err != nil {
 		return err
 	}
@@ -325,7 +325,7 @@ func (m *MySQL) GetChange(pollID, answerID string) (string, error) {
 		return "", fmt.Errorf("mysql: can not convert id '%s': %w", answerID, err)
 	}
 
-	rows, err := m.db.Query("SELECT change FROM result WHERE poll=? AND id=?", pollID, id)
+	rows, err := m.db.Query("SELECT `change` FROM result WHERE poll=? AND id=?", pollID, id)
 	if err != nil {
 		return "", err
 	}
