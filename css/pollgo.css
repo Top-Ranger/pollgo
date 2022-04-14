@@ -12,13 +12,14 @@
     font-family: 'Oxygen';
     src: local('Oxygen Regular'), local('Oxygen-Regular'), url({{.ServerPath}}/font/Oxygen-Regular.ttf);
 }
+
 @font-face {
     font-family: 'Noto Sans Symbols 2';
     src: local('Noto Sans Symbols 2'), url({{.ServerPath}}/font/NotoSansSymbols2-Regular.ttf);
 }
 
 html {
-    font-family: 'Oxygen', sans-serif;
+    font-family: 'Oxygen', 'Noto Sans Symbols 2', sans-serif;
     line-height: 1.3;
     hyphens: auto;
     height: 100%;
@@ -144,8 +145,4 @@ pre {
     -o-user-select: none;
     -webkit-touch-callout: none;
     -webkit-user-select: none;
-}
-
-.icon-font {
-    font-family: 'Noto Sans Symbols 2';
 }
