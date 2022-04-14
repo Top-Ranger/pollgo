@@ -1,1 +1,1 @@
-ALTER TABLE pollgo.result ADD change TINYTEXT;
+ALTER TABLE pollgo.result ADD `change` TINYTEXT;
