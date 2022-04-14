@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2020 Marcus Soll
+// Copyright 2020,2022 Marcus Soll
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -16,6 +16,8 @@
 package datasafe
 
 import (
+	"crypto/rand"
+	"encoding/base32"
 	"encoding/gob"
 	"encoding/json"
 	"errors"
@@ -92,6 +94,8 @@ type FileMemoryPollResult struct {
 	LastAccess time.Time
 	Deleted    bool
 	Creator    string
+	Change     []string
+	IDs        []string
 }
 
 func (fm FileMemory) getInternalID(ID string) (string, error) {
@@ -103,7 +107,37 @@ func (fm FileMemory) getInternalID(ID string) (string, error) {
 }
 
 // SavePollResult saves the results of a single poll.
-func (fm *FileMemory) SavePollResult(pollID, name, comment string, results []int) error {
+func (fm *FileMemory) SavePollResult(pollID, name, comment string, results []int, change string) (string, error) {
+	fm.l.Lock()
+	defer fm.l.Unlock()
+	if !fm.active {
+		return "", ErrFileMemoryNotActive
+	}
+	err := fm.testload(pollID)
+	if err != nil {
+		return "", err
+	}
+
+	pollID, err = fm.getInternalID(pollID)
+	if err != nil {
+		return "", err
+	}
+
+	p := fm.memory[pollID]
+	p.Data = append(p.Data, results)
+	p.Names = append(p.Names, name)
+	p.Comments = append(p.Comments, comment)
+	p.Change = append(p.Change, change)
+	id := fm.getRandomID()
+	p.IDs = append(p.IDs, id)
+	p.LastAccess = time.Now()
+	fm.memory[pollID] = p
+	return id, nil
+}
+
+// OverwritePollResult overwrites the results of a single poll with a given new result.
+// Errors out if the answerID is unknown
+func (fm *FileMemory) OverwritePollResult(pollID, answerID, name, comment string, results []int, change string) error {
 	fm.l.Lock()
 	defer fm.l.Unlock()
 	if !fm.active {
@@ -120,36 +154,73 @@ func (fm *FileMemory) SavePollResult(pollID, name, comment string, results []int
 	}
 
 	p := fm.memory[pollID]
-	p.Data = append(p.Data, results)
-	p.Names = append(p.Names, name)
-	p.Comments = append(p.Comments, comment)
-	p.LastAccess = time.Now()
-	fm.memory[pollID] = p
-	return nil
+
+	for i := range p.IDs {
+		if p.IDs[i] == answerID {
+			p.Data[i] = results
+			p.Names[i] = name
+			p.Comments[i] = comment
+			p.Change[i] = change
+			p.LastAccess = time.Now()
+			fm.memory[pollID] = p
+			return nil
+		}
+	}
+
+	return ErrFileMemoryInvalidID
 }
 
 // GetPollResult returns the results of a poll.
-func (fm *FileMemory) GetPollResult(pollID string) ([][]int, []string, []string, error) {
+func (fm *FileMemory) GetPollResult(pollID string) ([][]int, []string, []string, []string, error) {
 	fm.l.Lock()
 	defer fm.l.Unlock()
 	if !fm.active {
-		return nil, nil, nil, ErrFileMemoryNotActive
+		return nil, nil, nil, nil, ErrFileMemoryNotActive
 	}
 
 	err := fm.testload(pollID)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 
 	pollID, err = fm.getInternalID(pollID)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 
 	p := fm.memory[pollID]
 	p.LastAccess = time.Now()
 	fm.memory[pollID] = p
-	return p.Data, p.Names, p.Comments, nil
+	return p.Data, p.Names, p.Comments, p.IDs, nil
+}
+
+func (fm *FileMemory) GetSinglePollResult(pollID, answerID string) ([]int, string, string, error) {
+	fm.l.Lock()
+	defer fm.l.Unlock()
+	if !fm.active {
+		return nil, "", "", ErrFileMemoryNotActive
+	}
+	err := fm.testload(pollID)
+	if err != nil {
+		return nil, "", "", err
+	}
+
+	pollID, err = fm.getInternalID(pollID)
+	if err != nil {
+		return nil, "", "", err
+	}
+
+	p := fm.memory[pollID]
+
+	for i := range p.IDs {
+		if p.IDs[i] == answerID {
+			p.LastAccess = time.Now()
+			fm.memory[pollID] = p
+			return p.Data[i], p.Names[i], p.Comments[i], nil
+		}
+	}
+
+	return nil, "", "", ErrFileMemoryInvalidID
 }
 
 // SavePollConfig saves the poll configuration.
@@ -271,6 +342,34 @@ func (fm *FileMemory) MarkPollDeleted(pollID string) error {
 	p.LastAccess = time.Now()
 	fm.memory[pollID] = p
 	return nil
+}
+
+// GetChange returns the password needed for changing an answer.
+func (fm *FileMemory) GetChange(pollID, answerID string) (string, error) {
+	fm.l.Lock()
+	defer fm.l.Unlock()
+	if !fm.active {
+		return "", ErrFileMemoryNotActive
+	}
+	err := fm.testload(pollID)
+	if err != nil {
+		return "", err
+	}
+
+	pollID, err = fm.getInternalID(pollID)
+	if err != nil {
+		return "", err
+	}
+
+	p := fm.memory[pollID]
+
+	for i := range p.IDs {
+		if p.IDs[i] == answerID {
+			return p.Change[i], nil
+		}
+	}
+
+	return "", ErrFileMemoryInvalidID
 }
 
 // RunGC runs the garbage collection and removes deleted polls.
@@ -525,6 +624,8 @@ func (fm *FileMemory) load(ID string) (FileMemoryPollResult, error) {
 	var config []byte
 	var deleted bool
 	var creator string
+	var change []string
+	var ids []string
 	err = dec.Decode(&data)
 	if err != nil && err != io.EOF {
 		return FileMemoryPollResult{LastAccess: time.Now()}, err
@@ -549,6 +650,21 @@ func (fm *FileMemory) load(ID string) (FileMemoryPollResult, error) {
 	if err != nil && err != io.EOF {
 		return FileMemoryPollResult{LastAccess: time.Now()}, err
 	}
+	err = dec.Decode(&change)
+	if err != nil && err != io.EOF {
+		return FileMemoryPollResult{LastAccess: time.Now()}, err
+	}
+	err = dec.Decode(&ids)
+	if err != nil && err != io.EOF {
+		return FileMemoryPollResult{LastAccess: time.Now()}, err
+	}
+
+	for len(change) < len(names) {
+		change = append(change, "")
+	}
+	for len(ids) < len(names) {
+		ids = append(ids, "")
+	}
 	fmpr := FileMemoryPollResult{
 		Data:       data,
 		Names:      names,
@@ -557,6 +673,8 @@ func (fm *FileMemory) load(ID string) (FileMemoryPollResult, error) {
 		LastAccess: time.Now(),
 		Deleted:    deleted,
 		Creator:    creator,
+		Change:     change,
+		IDs:        ids,
 	}
 	return fmpr, nil
 }
@@ -605,5 +723,22 @@ func (fm *FileMemory) save(ID string) error {
 	if err != nil {
 		return err
 	}
+	err = enc.Encode(&p.Change)
+	if err != nil {
+		return err
+	}
+	err = enc.Encode(&p.IDs)
+	if err != nil {
+		return err
+	}
 	return nil
+}
+
+func (fm FileMemory) getRandomID() string {
+	b := make([]byte, 15)
+	_, err := rand.Read(b)
+	if err != nil {
+		return ""
+	}
+	return base32.StdEncoding.EncodeToString(b)
 }

@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2020 Marcus Soll
+// Copyright 2020,2022 Marcus Soll
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package main
 
 import (
 	"bytes"
+	"crypto/subtle"
 	"encoding/json"
 	"fmt"
 	"html/template"
@@ -28,6 +29,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/Top-Ranger/pollgo/helper"
 	"github.com/go-playground/colors"
 )
 
@@ -50,6 +52,8 @@ type pollTemplateStruct struct {
 	AnswerWhiteFont [][]bool
 	Names           []string
 	Comments        []string
+	IDs             []string
+	CanEdit         []bool
 	Points          []float64
 	BestValue       float64
 	Description     template.HTML
@@ -60,9 +64,13 @@ type pollTemplateStruct struct {
 
 type answerTemplateStruct struct {
 	Key          string
+	EditID       string
 	AnswerOption [][]string // [text, value, colour]
 	Questions    []string
 	Description  template.HTML
+	Name         string
+	Comment      string
+	Answers      []int
 	Translation  Translation
 	ServerPath   string
 }
@@ -296,13 +304,74 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				}
 				results[i] = ai
 			}
-			err = safe.SavePollResult(key, r.Form.Get("name"), r.Form.Get("comment"), results)
-			if err != nil {
-				rw.WriteHeader(http.StatusInternalServerError)
-				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
-				textTemplate.Execute(rw, t)
-				return
+			change := helper.GetRandomString()
+
+			answerID := r.Form.Get("answerID")
+			if answerID == "" {
+				answerID, err = safe.SavePollResult(key, r.Form.Get("name"), r.Form.Get("comment"), results, change)
+				if err != nil {
+					rw.WriteHeader(http.StatusInternalServerError)
+					t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
+					textTemplate.Execute(rw, t)
+					return
+				}
+			} else {
+				change, err = safe.GetChange(key, answerID)
+				if err != nil {
+					rw.WriteHeader(http.StatusInternalServerError)
+					t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
+					textTemplate.Execute(rw, t)
+					return
+				}
+				if change == "" {
+					rw.WriteHeader(http.StatusForbidden)
+					t := textTemplateStruct{"403 Forbidden", GetDefaultTranslation(), config.ServerPath}
+					textTemplate.Execute(rw, t)
+					return
+				}
+				cookies := r.Cookies()
+				found := false
+				for i := range cookies {
+					if cookies[i].Name == answerID {
+						if subtle.ConstantTimeCompare([]byte(change), []byte(cookies[i].Value)) == 0 {
+							if config.LogFailedLogin {
+								log.Printf("Failed authentication from %s", GetRealIP(r))
+							}
+							rw.WriteHeader(http.StatusForbidden)
+							t := textTemplateStruct{"403 Forbidden", GetDefaultTranslation(), config.ServerPath}
+							textTemplate.Execute(rw, t)
+							return
+						}
+						found = true
+					}
+				}
+
+				if !found {
+					rw.WriteHeader(http.StatusForbidden)
+					t := textTemplateStruct{"403 Forbidden", GetDefaultTranslation(), config.ServerPath}
+					textTemplate.Execute(rw, t)
+					return
+				}
+
+				err := safe.OverwritePollResult(key, answerID, r.Form.Get("name"), r.Form.Get("comment"), results, change)
+				if err != nil {
+					rw.WriteHeader(http.StatusInternalServerError)
+					t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
+					textTemplate.Execute(rw, t)
+					return
+				}
 			}
+
+			// Set cookie for editing
+			cookie := http.Cookie{}
+			cookie.Name = answerID
+			cookie.Value = change
+			cookie.MaxAge = 24 * 60 * 60 * config.EditCookieDays
+			cookie.Path = fmt.Sprintf("/%s", key)
+			cookie.SameSite = http.SameSiteLaxMode
+			cookie.HttpOnly = true
+			http.SetCookie(rw, &cookie)
+
 			http.Redirect(rw, r, fmt.Sprintf("/%s", key), http.StatusSeeOther)
 			return
 		}
@@ -759,12 +828,37 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				// Answer requested
 				td := answerTemplateStruct{
 					Key:          sanitiseKey(key),
+					EditID:       r.Form.Get("answerID"),
 					AnswerOption: p.AnswerOption,
 					Questions:    p.Questions,
 					Description:  Format([]byte(p.Description)),
+					Name:         "",
+					Comment:      "",
+					Answers:      nil,
 					Translation:  GetDefaultTranslation(),
 					ServerPath:   config.ServerPath,
 				}
+
+				if td.EditID != "" {
+					r, n, c, err := safe.GetSinglePollResult(key, td.EditID)
+					if err != nil {
+						if err != nil {
+							rw.WriteHeader(http.StatusInternalServerError)
+							t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
+							textTemplate.Execute(rw, t)
+							return
+						}
+					}
+
+					td.Name = n
+					td.Comment = c
+					td.Answers = r
+				}
+
+				for len(td.Answers) < len(p.Questions) {
+					td.Answers = append(td.Answers, -1)
+				}
+
 				err = answerTemplate.Execute(rw, td)
 				if err != nil {
 					log.Printf("Poll.HandleRequest.answer: %s", err.Error())
@@ -773,7 +867,9 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			}
 
 			// Poll requested
-			r, n, c, err := safe.GetPollResult(key)
+			cookies := r.Cookies()
+
+			r, n, c, aid, err := safe.GetPollResult(key)
 			if err != nil {
 				rw.WriteHeader(http.StatusInternalServerError)
 				t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
@@ -786,6 +882,22 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				rw.WriteHeader(http.StatusInternalServerError)
 				log.Printf("Poll.HandleRequest (%s):  len(r) != len(n)", key)
 				t := textTemplateStruct{"len(r) != len(n)", GetDefaultTranslation(), config.ServerPath}
+				textTemplate.Execute(rw, t)
+				return
+			}
+
+			if len(r) != len(c) {
+				rw.WriteHeader(http.StatusInternalServerError)
+				log.Printf("Poll.HandleRequest (%s):  len(r) != len(C)", key)
+				t := textTemplateStruct{"len(r) != len(C)", GetDefaultTranslation(), config.ServerPath}
+				textTemplate.Execute(rw, t)
+				return
+			}
+
+			if len(r) != len(aid) {
+				rw.WriteHeader(http.StatusInternalServerError)
+				log.Printf("Poll.HandleRequest (%s):  len(r) != len(aid)", key)
+				t := textTemplateStruct{"len(r) != len(aid)", GetDefaultTranslation(), config.ServerPath}
 				textTemplate.Execute(rw, t)
 				return
 			}
@@ -807,12 +919,19 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				AnswerWhiteFont: make([][]bool, len(n)),
 				Names:           n,
 				Comments:        c,
+				IDs:             aid,
+				CanEdit:         make([]bool, len(n)),
 				Points:          make([]float64, len(p.Questions)),
 				BestValue:       math.Inf(-1),
 				Description:     Format([]byte(p.Description)),
 				HasPassword:     config.AuthenticationEnabled,
 				Translation:     GetDefaultTranslation(),
 				ServerPath:      config.ServerPath,
+			}
+
+			knownIDs := make(map[string]bool)
+			for i := 0; i < len(cookies) && i < len(r)*2; i++ {
+				knownIDs[cookies[i].Name] = true
 			}
 
 			for i := range r {
@@ -839,6 +958,10 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				}
 				td.Answers[i] = answer
 				td.AnswerWhiteFont[i] = whitefont
+
+				if knownIDs[aid[i]] {
+					td.CanEdit[i] = true
+				}
 			}
 
 			for i := range td.Points {

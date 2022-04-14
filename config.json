@@ -12,5 +12,6 @@
     "DataSafe": "FileMemory",
     "DataSafeConfig": "FileMemory.json",
     "RunGCOnStart": true,
-    "ServerPath": "/"
+    "ServerPath": "/",
+    "EditCookieDays": 7
  }

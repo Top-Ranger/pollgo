@@ -24,6 +24,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"strconv"
 
 	_ "github.com/go-sql-driver/mysql"
 
@@ -58,7 +59,34 @@ type MySQL struct {
 	db  *sql.DB
 }
 
-func (m *MySQL) SavePollResult(pollID, name, comment string, results []int) error {
+func (m *MySQL) SavePollResult(pollID, name, comment string, results []int, change string) (string, error) {
+	if m.db == nil {
+		return "", ErrMySQLNotConfigured
+	}
+
+	if len(pollID) > MySQLMaxLengthID {
+		return "", ErrMySQLIDtooLong
+	}
+
+	var buf bytes.Buffer
+	enc := gob.NewEncoder(&buf)
+	err := enc.Encode(results)
+	if err != nil {
+		return "", fmt.Errorf("mysql: can not convert results: %w", err)
+	}
+	b := buf.Bytes()
+	r, err := m.db.Exec("INSERT INTO result (poll, name, comment, results, change) VALUES (?,?,?,?,?)", pollID, name, comment, b, change)
+	if err != nil {
+		return "", nil
+	}
+	lastInserted, err := r.LastInsertId()
+	if err != nil {
+		return "", err
+	}
+	return strconv.FormatInt(lastInserted, 10), nil
+}
+
+func (m *MySQL) OverwritePollResult(pollID, answerID, name, comment string, results []int, change string) error {
 	if m.db == nil {
 		return ErrMySQLNotConfigured
 	}
@@ -67,42 +95,60 @@ func (m *MySQL) SavePollResult(pollID, name, comment string, results []int) erro
 		return ErrMySQLIDtooLong
 	}
 
+	var id int64
+	id, err := strconv.ParseInt(answerID, 10, 64)
+	if err != nil {
+		return fmt.Errorf("mysql: can not convert id '%s': %w", answerID, err)
+	}
+
 	var buf bytes.Buffer
 	enc := gob.NewEncoder(&buf)
-	err := enc.Encode(results)
+	err = enc.Encode(results)
 	if err != nil {
 		return fmt.Errorf("mysql: can not convert results: %w", err)
 	}
 	b := buf.Bytes()
-	_, err = m.db.Exec("INSERT INTO result (poll, name, comment, results) VALUES (?,?,?,?)", pollID, name, comment, b)
-	return err
+	r, err := m.db.Exec("UPDATE result SET name=?, comment=?, results=?, change=? WHERE poll=? AND id=?", name, comment, b, change, pollID, id)
+	if err != nil {
+		return err
+	}
+	n, err := r.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if n != 1 {
+		return fmt.Errorf("mysql: update changed %d rows", n)
+	}
+	return nil
 }
 
-func (m *MySQL) GetPollResult(pollID string) ([][]int, []string, []string, error) {
+func (m *MySQL) GetPollResult(pollID string) ([][]int, []string, []string, []string, error) {
 	if m.db == nil {
-		return nil, nil, nil, ErrMySQLNotConfigured
+		return nil, nil, nil, nil, ErrMySQLNotConfigured
 	}
 
 	if len(pollID) > MySQLMaxLengthID {
-		return nil, nil, nil, ErrMySQLIDtooLong
+		return nil, nil, nil, nil, ErrMySQLIDtooLong
 	}
 
+	ids := make([]string, 0)
 	results := make([][]int, 0)
 	names := make([]string, 0)
 	comments := make([]string, 0)
 
-	rows, err := m.db.Query("SELECT name, comment, results FROM result WHERE poll=? ORDER BY id ASC", pollID)
+	rows, err := m.db.Query("SELECT id, name, comment, results FROM result WHERE poll=? ORDER BY id ASC", pollID)
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, nil, nil, nil, err
 	}
 	defer rows.Close()
 
 	for rows.Next() {
 		var r []byte
 		var n, c string
-		err = rows.Scan(&n, &c, &r)
+		var id int64
+		err = rows.Scan(&id, &n, &c, &r)
 		if err != nil {
-			return nil, nil, nil, err
+			return nil, nil, nil, nil, err
 		}
 		buf := bytes.NewBuffer(r)
 		dec := gob.NewDecoder(buf)
@@ -115,9 +161,51 @@ func (m *MySQL) GetPollResult(pollID string) ([][]int, []string, []string, error
 		results = append(results, singleResult)
 		names = append(names, n)
 		comments = append(comments, c)
+		ids = append(ids, strconv.FormatInt(id, 10))
 	}
 
-	return results, names, comments, nil
+	return results, names, comments, ids, nil
+}
+
+func (m *MySQL) GetSinglePollResult(pollID, answerID string) ([]int, string, string, error) {
+	if m.db == nil {
+		return nil, "", "", ErrMySQLNotConfigured
+	}
+
+	if len(pollID) > MySQLMaxLengthID {
+		return nil, "", "", ErrMySQLIDtooLong
+	}
+
+	var id int64
+	id, err := strconv.ParseInt(answerID, 10, 64)
+	if err != nil {
+		return nil, "", "", fmt.Errorf("mysql: can not convert id '%s': %w", answerID, err)
+	}
+
+	rows, err := m.db.Query("SELECT name, comment, results FROM result WHERE poll=? AND id=?", pollID, id)
+	if err != nil {
+		return nil, "", "", err
+	}
+	defer rows.Close()
+
+	if rows.Next() {
+		var r []byte
+		var n, c string
+		err = rows.Scan(&n, &c, &r)
+		if err != nil {
+			return nil, "", "", err
+		}
+		buf := bytes.NewBuffer(r)
+		dec := gob.NewDecoder(buf)
+		var singleResult []int
+		err := dec.Decode(&singleResult)
+		if err != nil {
+			return nil, "", "", fmt.Errorf("mysql: can not decode results: %w", err)
+		}
+		return singleResult, n, c, nil
+	}
+
+	return nil, "", "", ErrFileMemoryInvalidID
 }
 
 func (m *MySQL) SavePollConfig(pollID string, config []byte) error {
@@ -220,6 +308,41 @@ func (m *MySQL) MarkPollDeleted(pollID string) error {
 		return err
 	}
 	return nil
+}
+
+func (m *MySQL) GetChange(pollID, answerID string) (string, error) {
+	if m.db == nil {
+		return "", ErrMySQLNotConfigured
+	}
+
+	if len(pollID) > MySQLMaxLengthID {
+		return "", ErrMySQLIDtooLong
+	}
+
+	var id int64
+	id, err := strconv.ParseInt(answerID, 10, 64)
+	if err != nil {
+		return "", fmt.Errorf("mysql: can not convert id '%s': %w", answerID, err)
+	}
+
+	rows, err := m.db.Query("SELECT change FROM result WHERE poll=? AND id=?", pollID, id)
+	if err != nil {
+		return "", err
+	}
+	defer rows.Close()
+
+	if !rows.Next() {
+		return "", ErrMySQLUnknownID
+	}
+	var c sql.NullString
+	err = rows.Scan(&c)
+	if err != nil {
+		return "", err
+	}
+	if !c.Valid {
+		return "", nil
+	}
+	return c.String, nil
 }
 
 func (m *MySQL) RunGC() error {

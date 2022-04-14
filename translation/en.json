@@ -66,5 +66,7 @@
     "OpinionRatherGood": "Rather Good",
     "OpinionNeutral": "Neutral",
     "OpinionRatherBad": "Rather Bad",
-    "OpinionBad": "Bad"
+    "OpinionBad": "Bad",
+    "InvalidKey": "Invalid keys. URL must not have any additional '/'.",
+    "EditAnswer": "edit answer"
 }

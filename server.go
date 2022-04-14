@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2020,2021 Marcus Soll
+// Copyright 2020,2021,2022 Marcus Soll
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -297,7 +297,21 @@ func rootHandle(rw http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Check key for validity
 	key := r.URL.Path
+	key = strings.TrimPrefix(key, config.ServerPath)
+	key = strings.TrimLeft(key, "/")
+	if strings.ContainsRune(key, '/') {
+		// Invalid key
+		rw.Header().Set("Cache-Control", "no-cache, no-store, must-revalidate")
+		tl := GetDefaultTranslation()
+		t := textTemplateStruct{template.HTML(tl.InvalidKey), tl, config.ServerPath}
+		textTemplate.Execute(rw, t)
+		return
+	}
+
+	// Load poll - keep prefix, e.g. if multiple prefix should be used on same server
+	key = r.URL.Path
 	key = strings.TrimLeft(key, "/")
 
 	c, err := safe.GetPollConfig(key)

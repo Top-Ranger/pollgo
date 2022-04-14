@@ -14,6 +14,8 @@ Sie haben unter Umständen die Möglichkeit, Umfragen zu erstellen. Sollten Sie 
 
 Sie haben unter Umständen die Möglichkeit, an Umfragen teilzunehmen. Sollten Sie an einer Umfrage teilnehmen, so werden die Daten gespeichert auf Grundlage ihrer Einwilligung nach DSGVO Art. 6. Die Daten werden nicht zurückverfolgbar gespeichert, sind also anonym. Dies bedeutet, dass sich eine einzelne Antwort nicht mehr auf eine Person zurückverfolgen lässt. Die Antworten werden öffentlich für jeden sichtbar angezeigt.
 
+Wenn Sie an einer Umfrage teilnehmen, dann wird ein Cookie mit der Antwort-ID und einem Passwort gesetzt. Dieses Cookie ist technisch für die Funktion der Editierbarkeit notwendig. Er ist an eine Umfrage gebunden (technisch: Wird nur über den Pfad der Umfrage gesendet), es lässt sich daher nicht an Hand des Cookies feststellen, ob die selbe Person an mehreren Umfragen teilgenommen hat.
+
 ## Mit Stern markieren
 
 Sie haben die Möglichkeit, Umfragen mit einem Stern zu markieren, um diese Umfragen später schneller wiederfinden zu können. Die Information, welche Umfragen Sie markiert haben, wird ausschließlich auf Ihrem Endgerät (z.B. Browser) gespeichert und nicht zum Server übertragen / nicht vom Server gespeichert. Bitte nutzen Sie die Funktionen Ihres Endgerätes, falls sie die Informationen löschen wollen.

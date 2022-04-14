@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2020 Marcus Soll
+// Copyright 2020,2022 Marcus Soll
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -33,13 +33,16 @@ func (a AlreadyRegisteredError) Error() string {
 // All results must be stored in the same order they are added.
 // All methods must be save for parallel usage.
 type DataSafe interface {
-	SavePollResult(pollID, name, comment string, results []int) error
-	GetPollResult(pollID string) ([][]int, []string, []string, error)
+	SavePollResult(pollID, name, comment string, results []int, change string) (string, error)
+	OverwritePollResult(pollID, answerID, name, comment string, results []int, change string) error
+	GetPollResult(pollID string) (results [][]int, name []string, comment []string, answerIDs []string, err error)
+	GetSinglePollResult(pollID, answerID string) (result []int, name string, comment string, err error)
 	SavePollConfig(pollID string, config []byte) error
 	GetPollConfig(pollID string) ([]byte, error)
 	SavePollCreator(pollID, name string) error
 	GetPollCreator(pollID string) (string, error)
 	MarkPollDeleted(pollID string) error
+	GetChange(pollID, answerID string) (string, error)
 	RunGC() error
 	LoadConfig(data []byte) error
 	FlushAndClose()
