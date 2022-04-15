@@ -37,6 +37,7 @@ type DataSafe interface {
 	OverwritePollResult(pollID, answerID, name, comment string, results []int, change string) error
 	GetPollResult(pollID string) (results [][]int, name []string, comment []string, answerIDs []string, err error)
 	GetSinglePollResult(pollID, answerID string) (result []int, name string, comment string, err error)
+	DeleteAnswer(pollID, answerID string) error
 	SavePollConfig(pollID string, config []byte) error
 	GetPollConfig(pollID string) ([]byte, error)
 	SavePollCreator(pollID, name string) error

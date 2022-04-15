@@ -196,6 +196,7 @@ func (fm *FileMemory) GetPollResult(pollID string) ([][]int, []string, []string,
 	return p.Data, p.Names, p.Comments, p.IDs, nil
 }
 
+// GetSinglePollResult returns a single results of a poll identified by ID.
 func (fm *FileMemory) GetSinglePollResult(pollID, answerID string) ([]int, string, string, error) {
 	fm.l.Lock()
 	defer fm.l.Unlock()
@@ -223,6 +224,40 @@ func (fm *FileMemory) GetSinglePollResult(pollID, answerID string) ([]int, strin
 	}
 
 	return nil, "", "", ErrFileMemoryInvalidID
+}
+
+// DeleteAnswer deletes a single answer identified by ID.
+func (fm *FileMemory) DeleteAnswer(pollID, answerID string) error {
+	fm.l.Lock()
+	defer fm.l.Unlock()
+	if !fm.active {
+		return ErrFileMemoryNotActive
+	}
+	err := fm.testload(pollID)
+	if err != nil {
+		return err
+	}
+
+	pollID, err = fm.getInternalID(pollID)
+	if err != nil {
+		return err
+	}
+
+	p := fm.memory[pollID]
+
+	for i := range p.IDs {
+		if p.IDs[i] == answerID {
+			p.LastAccess = time.Now()
+			p.Data = append(p.Data[:i], p.Data[i+1:]...)
+			p.Names = append(p.Names[:i], p.Names[i+1:]...)
+			p.Comments = append(p.Comments[:i], p.Comments[i+1:]...)
+			p.Change = append(p.Change[:i], p.Change[i+1:]...)
+			p.IDs = append(p.IDs[:i], p.IDs[i+1:]...)
+			fm.memory[pollID] = p
+			return nil
+		}
+	}
+	return ErrFileMemoryInvalidID
 }
 
 // SavePollConfig saves the poll configuration.

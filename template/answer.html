@@ -72,10 +72,24 @@
       </tr>
       </table>
       <p><input type="checkbox" id="dsgvo_answer" name="dsgvo" onclick="document.getElementById('submit_answer').disabled = !this.checked" required><label for=dsgvo_answer>{{.Translation.AcceptPrivacyPolicy}}</label></p>
-      <input type="hidden" id="answerID" name="{{.EditID}}" value="">
+      <input type="hidden" id="answerID" name="answerID" value="{{.EditID}}">
       <p><input id="submit_answer" type="submit" value="{{.Translation.Submit}}"></p>
     </form>
   </div>
+
+  {{if .EditID}}
+  <div class="even">
+    <details>
+      <summary>{{.Translation.DeleteAnswer}}</summary>
+      <form method="POST">
+        <input type="hidden" id="answerID" name="{{.EditID}}" value="">
+        <input type="hidden" name="deleteAnswer" value="true">
+        <p><input type="submit" value="{{.Translation.DeleteAnswer}}"></p>
+      </form>
+    </details>
+    <p></p>
+  </div>
+  {{end}}
 
   <script>
     document.getElementById("submit_answer").disabled = !document.getElementById("dsgvo_answer").checked

@@ -68,5 +68,6 @@
     "OpinionRatherBad": "Eher Schlecht",
     "OpinionBad": "Schlecht",
     "InvalidKey": "Zugriffsschlüssel nicht erlaubt. Der Pfad darf keine zusätzlichen \"/\" enthalten.",
-    "EditAnswer": "Antwort bearbeiten"
+    "EditAnswer": "Antwort bearbeiten",
+    "DeleteAnswer": "Antwort löschen"
 }

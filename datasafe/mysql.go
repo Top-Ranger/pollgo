@@ -198,6 +198,38 @@ func (m *MySQL) GetSinglePollResult(pollID, answerID string) ([]int, string, str
 	return nil, "", "", ErrFileMemoryInvalidID
 }
 
+func (m *MySQL) DeleteAnswer(pollID, answerID string) error {
+	if m.db == nil {
+		return ErrMySQLNotConfigured
+	}
+
+	if len(pollID) > MySQLMaxLengthID {
+		return ErrMySQLIDtooLong
+	}
+
+	var id int64
+	id, err := strconv.ParseInt(answerID, 10, 64)
+	if err != nil {
+		return fmt.Errorf("mysql: can not convert id '%s': %w", answerID, err)
+	}
+
+	r, err := m.db.Exec("DELETE FROM result WHERE poll=? AND id=?", pollID, id)
+	if err != nil {
+		return err
+	}
+	affected, err := r.RowsAffected()
+	if err != nil {
+		return err
+	}
+	if affected == 0 {
+		return ErrMySQLUnknownID
+	}
+	if affected > 1 {
+		return fmt.Errorf("mysql: delete for (%s, %d) was too large: %d", pollID, id, affected)
+	}
+	return nil
+}
+
 func (m *MySQL) SavePollConfig(pollID string, config []byte) error {
 	if m.db == nil {
 		return ErrMySQLNotConfigured

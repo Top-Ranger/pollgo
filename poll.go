@@ -278,6 +278,71 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				return
 			}
 
+			// Test if we should delete an answer
+			if r.Form.Get("deleteAnswer") == "true" {
+				// Delete answer
+				answerID := r.Form.Get("answerID")
+
+				change, err := safe.GetChange(key, answerID)
+				if err != nil {
+					rw.WriteHeader(http.StatusInternalServerError)
+					t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
+					textTemplate.Execute(rw, t)
+					return
+				}
+				if change == "" {
+					rw.WriteHeader(http.StatusForbidden)
+					t := textTemplateStruct{"403 Forbidden", GetDefaultTranslation(), config.ServerPath}
+					textTemplate.Execute(rw, t)
+					return
+				}
+				cookies := r.Cookies()
+				found := false
+				for i := range cookies {
+					if cookies[i].Name == answerID {
+						if subtle.ConstantTimeCompare([]byte(change), []byte(cookies[i].Value)) == 0 {
+							if config.LogFailedLogin {
+								log.Printf("Failed authentication from %s", GetRealIP(r))
+							}
+							rw.WriteHeader(http.StatusForbidden)
+							t := textTemplateStruct{"403 Forbidden", GetDefaultTranslation(), config.ServerPath}
+							textTemplate.Execute(rw, t)
+							return
+						}
+						found = true
+					}
+				}
+
+				if !found {
+					rw.WriteHeader(http.StatusForbidden)
+					t := textTemplateStruct{"403 Forbidden", GetDefaultTranslation(), config.ServerPath}
+					textTemplate.Execute(rw, t)
+					return
+				}
+
+				err = safe.DeleteAnswer(key, answerID)
+				if err != nil {
+					rw.WriteHeader(http.StatusInternalServerError)
+					t := textTemplateStruct{template.HTML(template.HTMLEscapeString(err.Error())), GetDefaultTranslation(), config.ServerPath}
+					textTemplate.Execute(rw, t)
+					return
+				}
+
+				// Remove cookie
+				cookie := http.Cookie{}
+				cookie.Name = answerID
+				cookie.Value = ""
+				cookie.MaxAge = -1
+				cookie.Path = fmt.Sprintf("/%s", key)
+				cookie.SameSite = http.SameSiteLaxMode
+				cookie.HttpOnly = true
+				http.SetCookie(rw, &cookie)
+
+				http.Redirect(rw, r, fmt.Sprintf("/%s", key), http.StatusSeeOther)
+
+				return
+			}
+
 			// Test DSGVO first
 			if r.Form.Get("dsgvo") == "" {
 				rw.WriteHeader(http.StatusForbidden)
