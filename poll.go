@@ -798,7 +798,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			}
 
 			// Answers
-			p.AnswerOption = [][]string{{tl.OpinionGood, "2", "#9AC361"}, {tl.OpinionRatherGood, "1", "#709C34"}, {tl.OpinionNeutral, "0", "#9A9A9A"}, {tl.OpinionRatherBad, "-1", "#90305A"}, {tl.OpinionBad, "-2", "#6C1239"}}
+			p.AnswerOption = [][]string{{tl.OpinionGood, "2", "#C4DCA3"}, {tl.OpinionRatherGood, "1", "#98C757"}, {tl.OpinionNeutral, "0", "#9A9A9A"}, {tl.OpinionRatherBad, "-1", "#90305A"}, {tl.OpinionBad, "-2", "#6C1239"}}
 
 			if !VerifyPollConfig(*p) {
 				rw.WriteHeader(http.StatusBadRequest)
