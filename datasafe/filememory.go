@@ -87,15 +87,16 @@ type FileMemory struct {
 // FileMemoryPollResult is a helper struct which holds the Results of a poll.
 // The data is only guaranteed to be saved to disk after FlushAndClose is called.
 type FileMemoryPollResult struct {
-	Data       [][]int
-	Names      []string
-	Comments   []string
-	Config     []byte
-	LastAccess time.Time
-	Deleted    bool
-	Creator    string
-	Change     []string
-	IDs        []string
+	Data          [][]int
+	Names         []string
+	Comments      []string
+	Config        []byte
+	LastAccess    time.Time
+	Deleted       bool
+	Creator       string
+	Change        []string
+	IDs           []string
+	AnswerCounter int
 }
 
 func (fm FileMemory) getInternalID(ID string) (string, error) {
@@ -128,7 +129,8 @@ func (fm *FileMemory) SavePollResult(pollID, name, comment string, results []int
 	p.Names = append(p.Names, name)
 	p.Comments = append(p.Comments, comment)
 	p.Change = append(p.Change, change)
-	id := fmt.Sprintf("%d-%s", len(p.Change), fm.getRandomID())
+	p.AnswerCounter++
+	id := fmt.Sprintf("%d-%s", p.AnswerCounter, fm.getRandomID())
 	p.IDs = append(p.IDs, id)
 	p.LastAccess = time.Now()
 	fm.memory[pollID] = p
@@ -626,6 +628,7 @@ func (fm *FileMemory) load(ID string) (FileMemoryPollResult, error) {
 	var creator string
 	var change []string
 	var ids []string
+	var answerCounter int
 	err = dec.Decode(&data)
 	if err != nil && err != io.EOF {
 		return FileMemoryPollResult{LastAccess: time.Now()}, err
@@ -658,6 +661,10 @@ func (fm *FileMemory) load(ID string) (FileMemoryPollResult, error) {
 	if err != nil && err != io.EOF {
 		return FileMemoryPollResult{LastAccess: time.Now()}, err
 	}
+	err = dec.Decode(&answerCounter)
+	if err != nil && err != io.EOF {
+		return FileMemoryPollResult{LastAccess: time.Now()}, err
+	}
 
 	for len(change) < len(names) {
 		change = append(change, "")
@@ -666,15 +673,16 @@ func (fm *FileMemory) load(ID string) (FileMemoryPollResult, error) {
 		ids = append(ids, "")
 	}
 	fmpr := FileMemoryPollResult{
-		Data:       data,
-		Names:      names,
-		Comments:   comments,
-		Config:     config,
-		LastAccess: time.Now(),
-		Deleted:    deleted,
-		Creator:    creator,
-		Change:     change,
-		IDs:        ids,
+		Data:          data,
+		Names:         names,
+		Comments:      comments,
+		Config:        config,
+		LastAccess:    time.Now(),
+		Deleted:       deleted,
+		Creator:       creator,
+		Change:        change,
+		IDs:           ids,
+		AnswerCounter: answerCounter,
 	}
 	return fmpr, nil
 }
@@ -728,6 +736,10 @@ func (fm *FileMemory) save(ID string) error {
 		return err
 	}
 	err = enc.Encode(&p.IDs)
+	if err != nil {
+		return err
+	}
+	err = enc.Encode(&p.AnswerCounter)
 	if err != nil {
 		return err
 	}
