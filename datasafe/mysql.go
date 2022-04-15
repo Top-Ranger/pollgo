@@ -195,7 +195,7 @@ func (m *MySQL) GetSinglePollResult(pollID, answerID string) ([]int, string, str
 		return singleResult, n, c, nil
 	}
 
-	return nil, "", "", ErrFileMemoryInvalidID
+	return nil, "", "", ErrMySQLUnknownID
 }
 
 func (m *MySQL) DeleteAnswer(pollID, answerID string) error {
