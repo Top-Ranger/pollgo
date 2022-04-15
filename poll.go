@@ -596,7 +596,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			p.initialised = true
 		case "date":
 			t := GetDefaultTranslation()
-			p.AnswerOption = [][]string{{t.DateYes, "1.0", "#5EFF5E"}, {t.DateOnlyIfNeeded, "0.25", "#FFE75E"}, {t.DateNo, "-1.0", "#FF5E66"}, {t.DateCanNotSay, "0.0", "#DBD9E2"}}
+			p.AnswerOption = [][]string{{t.DateYes, "1.0", "#9AC361"}, {t.DateOnlyIfNeeded, "0.25", "#9A9A9A"}, {t.DateNo, "-1.0", "#6C1239"}, {t.DateCanNotSay, "0.0", "#F7F7F7"}}
 			var dateRead = "2006-01-02"
 			var timeWrite = "02.01.2006 15:04"
 			var timeWriteNoTime = "02.01.2006"
@@ -798,7 +798,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			}
 
 			// Answers
-			p.AnswerOption = [][]string{{tl.OpinionGood, "2", "#2D8C28"}, {tl.OpinionRatherGood, "1", "#76ca73"}, {tl.OpinionNeutral, "0", "#9a9a9a"}, {tl.OpinionRatherBad, "-1", "#ff8282"}, {tl.OpinionBad, "-2", "#BC2C2C"}}
+			p.AnswerOption = [][]string{{tl.OpinionGood, "2", "#9AC361"}, {tl.OpinionRatherGood, "1", "#709C34"}, {tl.OpinionNeutral, "0", "#9A9A9A"}, {tl.OpinionRatherBad, "-1", "#90305A"}, {tl.OpinionBad, "-2", "#6C1239"}}
 
 			if !VerifyPollConfig(*p) {
 				rw.WriteHeader(http.StatusBadRequest)
