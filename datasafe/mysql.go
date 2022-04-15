@@ -48,8 +48,8 @@ const MySQLMaxLengthID = 500
 // ErrMySQLUnknownID is returned when the requested poll is not in the database
 var ErrMySQLIDtooLong = errors.New("mysql: id is too long")
 
-// ErrMySQLUnknownID is returned when the requested poll is not in the database
-var ErrMySQLUnknownID = errors.New("mysql: unknown poll id")
+// ErrMySQLUnknownID is returned when the requested poll/answer is not in the database
+var ErrMySQLUnknownID = errors.New("mysql: unknown id")
 
 // ErrMySQLNotConfigured is returned when the database is used before it is configured
 var ErrMySQLNotConfigured = errors.New("mysql: usage before configuration is used")
