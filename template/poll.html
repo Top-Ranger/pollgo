@@ -25,9 +25,9 @@
   <h1>{{.Key}} <span id="pollgo_star"></span> <span id="pollgo_star_name" style="text-decoration: underline; background-color: var(--primary-colour-light); display: inline-block; min-width: 100px; vertical-align: bottom; visibility: hidden;" type="text" autocomplete="off" oninput="updateDisplay(this.innerText)" contenteditable="true"></span></h1>
   <script>
     function createStar() {
-      let s = document.createElement("SPAN");
+      let s = document.createElement("BUTTON");
       s.textContent = "★";
-      s.setAttribute("style", "cursor: pointer;")
+      s.setAttribute("style", "font-size: inherit; line-height: 1")
       document.getElementById("pollgo_star_name").style.visibility="visible";
       let a = getPolls();
       if (a["{{.Key}}"] && a["{{.Key}}"].Display) {
@@ -52,9 +52,9 @@
     }
 
     function createNoStar() {
-      let s = document.createElement("SPAN");
+      let s = document.createElement("BUTTON");
       s.textContent = "☆";
-      s.setAttribute("style", "cursor: pointer;")
+      s.setAttribute("style", "font-size: inherit; line-height: 1")
       document.getElementById("pollgo_star_name").style.visibility="hidden";
       document.getElementById("pollgo_star_name").innerText = "";
       s.tabIndex = 0;
@@ -65,6 +65,7 @@
         let target = document.getElementById("pollgo_star");
         target.textContent = "";
         target.appendChild(createStar());
+        document.getElementById("pollgo_star_name").focus();
       };
       s.onclick = event;
       s.onkeydown = function(e) {
