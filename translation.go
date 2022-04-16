@@ -98,6 +98,7 @@ type Translation struct {
 	InvalidKey                 string
 	EditAnswer                 string
 	DeleteAnswer               string
+	RememberedAs               string
 }
 
 const defaultLanguage = "en"

@@ -69,5 +69,6 @@
     "OpinionBad": "Bad",
     "InvalidKey": "Invalid keys. URL must not have any additional '/'.",
     "EditAnswer": "edit answer",
-    "DeleteAnswer": "Delete answer"
+    "DeleteAnswer": "Delete answer",
+    "RememberedAs": "Remembered as"
 }
