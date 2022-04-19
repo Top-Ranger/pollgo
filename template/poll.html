@@ -22,7 +22,7 @@
     </div>
   </header>
 
-  <h1>{{.Key}} <span id="pollgo_star"></span> <span id="pollgo_star_rememberedas" style="font-size: large; display: none; vertical-align: middle;">{{.Translation.RememberedAs}}:</span> <input type="text" form="no_form" id="pollgo_star_name" style="font-size: large; line-height: 1; display: none; vertical-align: middle;" autocomplete="off" oninput="updateDisplay(this.value)"></h1>
+  <h1>{{.Key}} <span id="pollgo_star"></span> <span id="pollgo_star_rememberedas" style="font-size: large; display: none; vertical-align: middle;">{{.Translation.RememberedAs}}:</span> <input type="text" form="no_form" id="pollgo_star_name" style="font-size: large; line-height: 1; display: none; vertical-align: middle;" placeholder="{{.Key}}" autocomplete="off" oninput="updateDisplay(this.value)"></h1>
   <script>
     function createStar() {
       let s = document.createElement("BUTTON");
