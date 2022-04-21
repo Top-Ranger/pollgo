@@ -107,6 +107,8 @@ func printInfo() {
 }
 
 func main() {
+	printInfo()
+
 	configPath := flag.String("config", "./config.json", "Path to json config for PollGo!")
 	flag.Parse()
 
