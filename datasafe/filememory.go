@@ -376,6 +376,7 @@ func (fm *FileMemory) MarkPollDeleted(pollID string) error {
 
 	p := fm.memory[pollID]
 	p.Deleted = true
+	p.Creator = ""
 	p.LastAccess = time.Now()
 	fm.memory[pollID] = p
 	return nil

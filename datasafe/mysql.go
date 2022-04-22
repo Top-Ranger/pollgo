@@ -325,7 +325,7 @@ func (m *MySQL) MarkPollDeleted(pollID string) error {
 		return ErrMySQLIDtooLong
 	}
 
-	_, err := m.db.Exec("UPDATE poll SET deleted=? WHERE name=?", true, pollID)
+	_, err := m.db.Exec("UPDATE poll SET deleted=?, creator=? WHERE name=?", true, sql.NullString{Valid: false}, pollID)
 	if err != nil {
 		return err
 	}
