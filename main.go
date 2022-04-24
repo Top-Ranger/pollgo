@@ -34,21 +34,22 @@ import (
 
 // ConfigStruct contains all configuration options for PollGo!
 type ConfigStruct struct {
-	Language              string
-	MaxNumberQuestions    int
-	Address               string
-	PathImpressum         string
-	PathDSGVO             string
-	AuthenticationEnabled bool
-	Authenticater         string
-	AuthenticaterConfig   string
-	LogFailedLogin        bool
-	OnlyCreatorCanDelete  bool
-	DataSafe              string
-	DataSafeConfig        string
-	RunGCOnStart          bool
-	ServerPath            string
-	EditCookieDays        int
+	Language                     string
+	MaxNumberQuestions           int
+	Address                      string
+	PathImpressum                string
+	PathDSGVO                    string
+	AuthenticationEnabled        bool
+	Authenticater                string
+	AuthenticaterConfig          string
+	LogFailedLogin               bool
+	OnlyCreatorCanDelete         bool
+	DataSafe                     string
+	DataSafeConfig               string
+	RunGCOnStart                 bool
+	ServerPath                   string
+	EditCookieDays               int
+	InsecureAllowCookiesOverHTTP bool
 }
 
 var config ConfigStruct

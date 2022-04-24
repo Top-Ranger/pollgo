@@ -336,6 +336,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 				cookie.Path = fmt.Sprintf("/%s", key)
 				cookie.SameSite = http.SameSiteLaxMode
 				cookie.HttpOnly = true
+				cookie.Secure = !config.InsecureAllowCookiesOverHTTP
 				http.SetCookie(rw, &cookie)
 
 				http.Redirect(rw, r, fmt.Sprintf("/%s", key), http.StatusSeeOther)
@@ -435,6 +436,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			cookie.Path = fmt.Sprintf("/%s", key)
 			cookie.SameSite = http.SameSiteLaxMode
 			cookie.HttpOnly = true
+			cookie.Secure = !config.InsecureAllowCookiesOverHTTP
 			http.SetCookie(rw, &cookie)
 
 			http.Redirect(rw, r, fmt.Sprintf("/%s", key), http.StatusSeeOther)
