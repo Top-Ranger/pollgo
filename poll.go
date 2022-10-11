@@ -598,7 +598,7 @@ func (p *Poll) HandleRequest(rw http.ResponseWriter, r *http.Request, key string
 			p.initialised = true
 		case "date":
 			t := GetDefaultTranslation()
-			p.AnswerOption = [][]string{{t.DateYes, "1.0", "#709C34"}, {t.DateOnlyIfNeeded, "0.25", "#9A9A9A"}, {t.DateNo, "-1.0", "#6C1239"}, {t.DateCanNotSay, "0.0", "#F7F7F7"}}
+			p.AnswerOption = [][]string{{t.DateYes, "1.0", "#243D00"}, {t.DateOnlyIfNeeded, "0.25", "#9A9A9A"}, {t.DateNo, "-1.0", "#E3C2D4"}, {t.DateCanNotSay, "0.0", "#F7F7F7"}}
 			var dateRead = "2006-01-02"
 			var timeWrite = "02.01.2006 15:04"
 			var timeWriteNoTime = "02.01.2006"
