@@ -6,7 +6,7 @@ require (
 	github.com/go-ldap/ldap/v3 v3.4.4
 	github.com/go-playground/colors v1.3.0
 	github.com/go-sql-driver/mysql v1.7.0
-	github.com/microcosm-cc/bluemonday v1.0.21
+	github.com/microcosm-cc/bluemonday v1.0.22
 	github.com/yuin/goldmark v1.5.3
 	golang.org/x/crypto v0.5.0
 	golang.org/x/time v0.3.0
