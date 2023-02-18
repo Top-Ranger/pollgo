@@ -8,7 +8,7 @@ require (
 	github.com/go-sql-driver/mysql v1.7.0
 	github.com/microcosm-cc/bluemonday v1.0.22
 	github.com/yuin/goldmark v1.5.4
-	golang.org/x/crypto v0.5.0
+	golang.org/x/crypto v0.6.0
 	golang.org/x/time v0.3.0
 )
 
@@ -17,6 +17,6 @@ require (
 	github.com/aymerick/douceur v0.2.0 // indirect
 	github.com/go-asn1-ber/asn1-ber v1.5.4 // indirect
 	github.com/gorilla/css v1.0.0 // indirect
-	golang.org/x/net v0.5.0 // indirect
-	golang.org/x/sys v0.4.0 // indirect
+	golang.org/x/net v0.7.0 // indirect
+	golang.org/x/sys v0.5.0 // indirect
 )
