@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/go-ldap/ldap/v3 v3.4.4
 	github.com/go-playground/colors v1.3.0
-	github.com/go-sql-driver/mysql v1.7.0
+	github.com/go-sql-driver/mysql v1.7.1
 	github.com/microcosm-cc/bluemonday v1.0.23
 	github.com/yuin/goldmark v1.5.4
 	golang.org/x/crypto v0.8.0
