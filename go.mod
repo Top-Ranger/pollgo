@@ -5,12 +5,12 @@ go 1.21
 toolchain go1.21.3
 
 require (
-	github.com/go-ldap/ldap/v3 v3.4.8
+	github.com/go-ldap/ldap/v3 v3.4.9
 	github.com/go-playground/colors v1.3.1
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/microcosm-cc/bluemonday v1.0.27
 	github.com/yuin/goldmark v1.7.8
-	golang.org/x/crypto v0.30.0
+	golang.org/x/crypto v0.31.0
 	golang.org/x/time v0.8.0
 )
 
