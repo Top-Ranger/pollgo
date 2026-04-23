@@ -530,7 +530,7 @@ func (fm *FileMemory) LoadConfig(data []byte) error {
 						log.Printf("filememory: can not rename %s to %s", filepath.Join(fm.Path, files[f]), filepath.Join(fm.Path, path))
 					}
 				}
-				os.Remove(filepath.Join(fm.Path, files[f]))
+				err = os.Remove(filepath.Join(fm.Path, files[f]))
 				if err != nil {
 					log.Printf("filememory: can not remove %s", filepath.Join(fm.Path, files[f]))
 				}
