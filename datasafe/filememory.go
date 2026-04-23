@@ -517,8 +517,10 @@ func (fm *FileMemory) LoadConfig(data []byte) error {
 			return err
 		}
 
+		countRepaired := 0
 		for f := range files {
 			if strings.HasPrefix(files[f], ".") && files[f] != "." && files[f] != ".." {
+				countRepaired++
 				path, _ := strings.CutPrefix(files[f], ".")
 				// If path exists, assume that the write was not complete, therefore skip the rename.
 				if _, err := os.Stat(filepath.Join(fm.Path, path)); errors.Is(err, os.ErrNotExist) {
@@ -534,6 +536,7 @@ func (fm *FileMemory) LoadConfig(data []byte) error {
 				}
 			}
 		}
+		log.Printf("filememory: repaired %d files", countRepaired)
 	}
 
 	go fm.worker()
@@ -588,13 +591,17 @@ func (fm *FileMemory) worker() {
 	durationClear := time.Duration(fm.ClearInterval) * time.Minute
 	durationSync := time.Duration(fm.DiscSyncInterval) * time.Minute
 	fm.l.Unlock()
+	dosync := durationSync != 0
+	if !dosync {
+		log.Print("filememory: periodical sync to disc is disabled.")
+		durationSync = 24 * time.Hour
+	}
 	clear := time.NewTicker(durationClear)
 	defer clear.Stop()
-	var sync time.Ticker
-	if durationSync != 0 {
-		sync = *time.NewTicker(durationSync)
-		defer sync.Stop()
-	}
+	// Always create timer here instead of in if to avoid "stop of synctest timer from outside bubble"
+	// This also allows to display some warnings
+	sync := time.NewTicker(durationSync)
+	defer sync.Stop()
 	for {
 		select {
 		case <-clear.C:
@@ -628,6 +635,10 @@ func (fm *FileMemory) worker() {
 			}()
 		case <-sync.C:
 			func() {
+				if !dosync {
+					log.Print("filememory: reminder: periodical sync to disc is disabled.")
+					return
+				}
 				fm.l.Lock()
 				defer fm.l.Unlock()
 
