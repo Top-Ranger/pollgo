@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-// Copyright 2020,2022 Marcus Soll
+// Copyright 2020,2022,2026 Marcus Soll
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -57,6 +57,7 @@ var ErrFileMemoryInvalidID = errors.New("filememory got invalid ID")
 const FileMemoryName = "FileMemory"
 
 // FileMemory holds a number of polls in memory and saves all other to disk.
+// Current implementation ensures that no data corruption can occure if it is closed unexpected. However, old data might prevail in that case.
 type FileMemory struct {
 	// Interval in minutes when a cleanup operation is started.
 	// A cleanup operation will reduce memory if MaximumMemory is exceeded by saving polls to disk.
@@ -101,7 +102,7 @@ type FileMemoryPollResult struct {
 
 func (fm FileMemory) getInternalID(ID string) (string, error) {
 	// ﷐
-	if strings.Contains(ID, "﷐") {
+	if strings.Contains(ID, "﷐") || strings.HasPrefix(ID, ".") {
 		return "", ErrFileMemoryInvalidID
 	}
 	return strings.ReplaceAll(ID, string(os.PathSeparator), "﷐"), nil
@@ -469,6 +470,7 @@ func (fm *FileMemory) RunGC() error {
 }
 
 // LoadConfig loads the configuration of the FileMemory from JSON encoded data.
+// This also cleans up any potential corrupted saves
 func (fm *FileMemory) LoadConfig(data []byte) error {
 	fm.l.Lock()
 	defer fm.l.Unlock()
@@ -501,6 +503,37 @@ func (fm *FileMemory) LoadConfig(data []byte) error {
 	err = os.MkdirAll(filepath.Join(fm.Path), os.ModePerm)
 	if err != nil {
 		return err
+	}
+
+	{
+		dir, err := os.Open(fm.Path)
+		if err != nil {
+			return err
+		}
+		defer dir.Close()
+
+		files, err := dir.Readdirnames(-1)
+		if err != nil {
+			return err
+		}
+
+		for f := range files {
+			if strings.HasPrefix(files[f], ".") && files[f] != "." && files[f] != ".." {
+				path, _ := strings.CutPrefix(files[f], ".")
+				// If path exists, assume that the write was not complete, therefore skip the rename.
+				if _, err := os.Stat(filepath.Join(fm.Path, path)); errors.Is(err, os.ErrNotExist) {
+					log.Println("!")
+					err = os.Rename(filepath.Join(fm.Path, files[f]), filepath.Join(fm.Path, path))
+					if err != nil {
+						log.Printf("filememory: can not rename %s to %s", filepath.Join(fm.Path, files[f]), filepath.Join(fm.Path, path))
+					}
+				}
+				os.Remove(filepath.Join(fm.Path, files[f]))
+				if err != nil {
+					log.Printf("filememory: can not remove %s", filepath.Join(fm.Path, files[f]))
+				}
+			}
+		}
 	}
 
 	go fm.worker()
@@ -735,50 +768,60 @@ func (fm *FileMemory) save(ID string) error {
 	}
 
 	// Save poll
-	f, err := os.Create(filepath.Join(fm.Path, ID))
-	if err != nil {
-		// some file error
-		return err
-	}
-	defer f.Close()
+	tmppath := filepath.Join(fm.Path, strings.Join([]string{".", ID}, ""))
+	path := filepath.Join(fm.Path, ID)
+	{
+		f, err := os.Create(tmppath)
+		if err != nil {
+			// some file error
+			return err
+		}
+		defer f.Close()
+		defer f.Sync()
 
-	enc := gob.NewEncoder(f)
-	err = enc.Encode(&p.Data)
-	if err != nil {
+		enc := gob.NewEncoder(f)
+		err = enc.Encode(&p.Data)
+		if err != nil {
+			return err
+		}
+		err = enc.Encode(&p.Names)
+		if err != nil {
+			return err
+		}
+		err = enc.Encode(&p.Comments)
+		if err != nil {
+			return err
+		}
+		err = enc.Encode(&p.Config)
+		if err != nil {
+			return err
+		}
+		err = enc.Encode(&p.Deleted)
+		if err != nil {
+			return err
+		}
+		err = enc.Encode(&p.Creator)
+		if err != nil {
+			return err
+		}
+		err = enc.Encode(&p.Change)
+		if err != nil {
+			return err
+		}
+		err = enc.Encode(&p.IDs)
+		if err != nil {
+			return err
+		}
+		err = enc.Encode(&p.AnswerCounter)
+		if err != nil {
+			return err
+		}
+	}
+	err := os.Remove(path)
+	if err != nil && !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
-	err = enc.Encode(&p.Names)
-	if err != nil {
-		return err
-	}
-	err = enc.Encode(&p.Comments)
-	if err != nil {
-		return err
-	}
-	err = enc.Encode(&p.Config)
-	if err != nil {
-		return err
-	}
-	err = enc.Encode(&p.Deleted)
-	if err != nil {
-		return err
-	}
-	err = enc.Encode(&p.Creator)
-	if err != nil {
-		return err
-	}
-	err = enc.Encode(&p.Change)
-	if err != nil {
-		return err
-	}
-	err = enc.Encode(&p.IDs)
-	if err != nil {
-		return err
-	}
-	err = enc.Encode(&p.AnswerCounter)
-	if err != nil {
-		return err
-	}
+	err = os.Rename(tmppath, path)
 	return nil
 }
 
