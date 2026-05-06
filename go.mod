@@ -5,7 +5,7 @@ go 1.25.0
 require (
 	github.com/go-ldap/ldap/v3 v3.4.13
 	github.com/go-playground/colors v1.3.1
-	github.com/go-sql-driver/mysql v1.9.3
+	github.com/go-sql-driver/mysql v1.10.0
 	github.com/microcosm-cc/bluemonday v1.0.27
 	github.com/yuin/goldmark v1.8.2
 	golang.org/x/crypto v0.50.0
